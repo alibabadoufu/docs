@@ -1,0 +1,348 @@
+---
+title: 'Interactive API Playground'
+description: 'Test all Postreach AI API endpoints directly in your browser with real-time parameter modification and response analysis'
+---
+
+# Interactive API Playground
+
+Welcome to the Postreach AI Interactive Playground! Test all our API endpoints directly from your browser with live parameter modification, real response data, and comprehensive debugging tools.
+
+<Info>
+This playground uses your actual API session ID and makes real API calls. Generated content and data will be processed by our live system.
+</Info>
+
+## Getting Started
+
+<Steps>
+<Step title="Setup Authentication">
+Enter your session ID in the authentication section below. This will be used for all API calls in the playground.
+
+<Note>
+Session IDs are used for tracking and analytics. Generate a test session ID from your dashboard or use a development session.
+</Note>
+</Step>
+
+<Step title="Choose Your Endpoint">
+Select from our available endpoints using the navigation below. Each endpoint includes:
+- Interactive parameter forms
+- Pre-filled examples
+- Real-time response display
+- Error handling demonstrations
+</Step>
+
+<Step title="Test and Iterate">
+Modify parameters, test different scenarios, and see live responses. All calls are made to our production API with full functionality.
+</Step>
+</Steps>
+
+## Available Endpoints
+
+<CardGroup cols={2}>
+<Card title="Pipeline Generation" icon="share-nodes" href="#pipeline-generate">
+  **POST** `/pipeline/generate`<br/>
+  Generate social media posts across multiple platforms
+</Card>
+
+<Card title="Get Results" icon="chart-line" href="#results-get">
+  **GET** `/results/{result_id}`<br/>
+  Retrieve pipeline generation results
+</Card>
+
+<Card title="Chat Message" icon="comments" href="#chatbot-message">
+  **POST** `/chatbot/message`<br/>
+  Interactive AI chatbot for content generation
+</Card>
+
+<Card title="Extract Keywords" icon="key" href="#content-keywords">
+  **POST** `/content/extract-keywords`<br/>
+  Extract keywords from URLs and content
+</Card>
+
+<Card title="Website Analysis" icon="globe" href="#website-analyze">
+  **POST** `/website/analyze`<br/>
+  Comprehensive website analysis and data extraction
+</Card>
+
+<Card title="Agent Management" icon="robot" href="#agents">
+  **CRUD** `/agents/*`<br/>
+  Create and manage AI agents
+</Card>
+</CardGroup>
+
+## Quick Test Examples
+
+### Social Media Pipeline
+
+Test the core pipeline functionality with pre-configured examples:
+
+<Tabs>
+<Tab title="Tech News Post">
+```json Example Request
+{
+  "mode": "Autopilot",
+  "social_post_number": {
+    "linkedin": 1,
+    "twitter": 2
+  },
+  "user_info": [
+    {
+      "type": "url",
+      "content": "https://techcrunch.com/2024/01/15/ai-breakthrough-2024",
+      "weight": 1.5
+    }
+  ],
+  "schedule_start_date": "2024-01-20T09:00:00Z",
+  "schedule_end_date": "2024-01-27T18:00:00Z",
+  "country": "US",
+  "language": "en"
+}
+```
+</Tab>
+
+<Tab title="Product Launch">
+```json Example Request  
+{
+  "mode": "Manual",
+  "social_post_number": {
+    "facebook": 1,
+    "instagram": 1,
+    "linkedin": 1
+  },
+  "user_info": [
+    {
+      "type": "text",
+      "content": "Launching our new project management SaaS platform designed for remote teams",
+      "weight": 2.0
+    }
+  ],
+  "schedule_start_date": "2024-01-25T08:00:00Z",
+  "schedule_end_date": "2024-01-25T20:00:00Z",
+  "country": "US",
+  "language": "en"
+}
+```
+</Tab>
+
+<Tab title="Thought Leadership">
+```json Example Request
+{
+  "mode": "Autopilot", 
+  "social_post_number": {
+    "linkedin": 2
+  },
+  "user_info": [
+    {
+      "type": "topic",
+      "content": "The future of remote work and digital collaboration tools",
+      "weight": 1.8
+    }
+  ],
+  "linkedin_char_count": 1500,
+  "idea_word_count": 800,
+  "schedule_start_date": "2024-01-22T10:00:00Z",
+  "schedule_end_date": "2024-01-29T17:00:00Z",
+  "country": "US",
+  "language": "en"
+}
+```
+</Tab>
+</Tabs>
+
+### Chatbot Interactions
+
+Test different chatbot modes with realistic scenarios:
+
+<Tabs>
+<Tab title="Content Ideation">
+```json Chat Request
+{
+  "message": {
+    "content": "I need help creating engaging LinkedIn content for my SaaS startup. We focus on project management tools for remote teams.",
+    "type": "text"
+  },
+  "mode": "chat",
+  "user_background": {
+    "industry": "SaaS",
+    "tone": "professional",
+    "target_audience": "Project managers and team leads",
+    "brand_voice": "Helpful and solution-oriented"
+  }
+}
+```
+</Tab>
+
+<Tab title="URL to Post">
+```json URL Analysis
+{
+  "message": {
+    "content": "https://blog.example.com/remote-work-productivity-study-2024",
+    "type": "url"
+  },
+  "mode": "url2post",
+  "user_background": {
+    "industry": "HR Technology",
+    "tone": "informative",
+    "target_audience": "HR professionals and managers",
+    "platforms": ["linkedin", "twitter"]
+  }
+}
+```
+</Tab>
+
+<Tab title="Image to Post">
+```json Image Analysis
+{
+  "message": {
+    "content": "https://example.com/team-photo.jpg",
+    "type": "image",
+    "metadata": {
+      "image_context": "Our development team at the annual hackathon"
+    }
+  },
+  "mode": "image2post",
+  "user_background": {
+    "industry": "Technology",
+    "tone": "friendly",
+    "target_audience": "Developers and tech enthusiasts",
+    "platforms": ["twitter", "linkedin"]
+  }
+}
+```
+</Tab>
+</Tabs>
+
+## Response Analysis Tools
+
+<Info>
+The playground includes built-in tools for analyzing API responses:
+</Info>
+
+### Response Inspector
+- **JSON Formatter**: Pretty-print response data
+- **Schema Validation**: Verify response structure
+- **Performance Metrics**: Track response times and token usage
+- **Error Analysis**: Detailed error code explanations
+
+### Integration Helper
+- **Code Generation**: Auto-generate integration code in Python, JavaScript, cURL
+- **SDK Examples**: Pre-built examples for popular frameworks
+- **Webhook Testing**: Test webhook integrations with sample payloads
+
+## Testing Scenarios
+
+<AccordionGroup>
+<Accordion title="Performance Testing">
+Test API performance with various payload sizes and complexity levels:
+
+- **Light requests**: Single platform, simple content
+- **Medium requests**: Multiple platforms, mixed content types  
+- **Heavy requests**: All platforms, complex scheduling, multiple inputs
+- **Edge cases**: Maximum character limits, unusual date ranges
+</Accordion>
+
+<Accordion title="Error Handling">
+Explore different error scenarios:
+
+- **Validation errors**: Invalid date formats, character limits
+- **Rate limiting**: Exceed request limits to see rate limit responses
+- **Authentication**: Test with invalid or missing session IDs
+- **Content policy**: Test content that might trigger policy violations
+</Accordion>
+
+<Accordion title="Integration Patterns">
+Test common integration patterns:
+
+- **Async processing**: Pipeline generation with result polling
+- **Streaming responses**: Real-time chat message streaming
+- **Batch operations**: Multiple sequential API calls
+- **Error recovery**: Implementing retry logic and graceful degradation
+</Accordion>
+</AccordionGroup>
+
+## Advanced Features
+
+### Custom Headers
+
+Test with various header combinations:
+- `X-Session-ID`: Session tracking identifier
+- `X-Track-ID`: Request tracking for analytics
+- `X-User-Agent`: Custom user agent strings
+- `X-Request-ID`: Custom request identifiers for debugging
+
+### Parameter Validation
+
+Real-time parameter validation with:
+- **Type checking**: Ensure correct data types
+- **Range validation**: Check numeric ranges and string lengths
+- **Format validation**: Validate URLs, dates, and structured data
+- **Required field checking**: Missing parameter detection
+
+### Response Simulation
+
+<Tip>
+Use dummy mode to test integration without consuming API credits or generating real content.
+</Tip>
+
+Enable `is_dummy_mode: true` in requests to receive realistic but simulated responses perfect for:
+- Integration testing
+- Demo environments  
+- Development workflows
+- Performance testing
+
+## Real API Integration
+
+<Warning>
+All playground requests use the live Postreach AI API. Generated content, agent operations, and data processing are real and will consume your account resources.
+</Warning>
+
+### Best Practices for Testing
+
+1. **Use development session IDs** for testing
+2. **Enable dummy mode** when appropriate
+3. **Test error scenarios** before production integration
+4. **Validate response handling** for all expected response types
+5. **Implement proper retry logic** based on playground observations
+
+### Production Checklist
+
+<Steps>
+<Step title="Authentication Setup">
+- [ ] Production session ID configured
+- [ ] Session renewal logic implemented  
+- [ ] Error handling for invalid sessions
+</Step>
+
+<Step title="Response Handling">
+- [ ] Success response parsing
+- [ ] Error response handling
+- [ ] Async operation polling
+- [ ] Rate limit handling
+</Step>
+
+<Step title="Integration Testing">
+- [ ] All endpoints tested
+- [ ] Error scenarios covered
+- [ ] Performance requirements met
+- [ ] Monitoring and logging implemented
+</Step>
+</Steps>
+
+## Support and Resources
+
+<CardGroup cols={2}>
+<Card title="API Documentation" icon="book" href="/api-reference/introduction">
+  Complete API reference with detailed endpoint documentation
+</Card>
+
+<Card title="Integration Guides" icon="code" href="/guides">
+  Step-by-step integration guides for popular frameworks
+</Card>
+
+<Card title="Community Support" icon="users" href="https://community.postreach.ai">
+  Join our developer community for support and discussions
+</Card>
+
+<Card title="Contact Support" icon="headset" href="mailto:support@postreach.ai">
+  Direct support for technical questions and issues
+</Card>
+</CardGroup> 

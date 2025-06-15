@@ -1,71 +1,199 @@
 ---
-title: Introduction
-description: "Welcome to the home of your new documentation"
+title: 'Postreach AI Documentation'
+description: 'Comprehensive documentation for Postreach AI - the leading platform for automated social media content generation and management'
 ---
 
 <img
   className="block dark:hidden"
-  src="/images/hero-light.png"
-  alt="Hero Light"
+  src="/images/postreach-hero-light.png"
+  alt="Postreach AI Platform"
 />
 <img
   className="hidden dark:block"
-  src="/images/hero-dark.png"
-  alt="Hero Dark"
+  src="/images/postreach-hero-dark.png"
+  alt="Postreach AI Platform"
 />
 
-## Setting up
+# Welcome to Postreach AI
 
-The first step to world-class documentation is setting up your editing environments.
-
-<CardGroup cols={2}>
-  <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
-  >
-    Get your docs set up locally for easy development
-  </Card>
-  <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
-  >
-    Preview your changes before you push to make sure they're perfect
-  </Card>
-</CardGroup>
-
-## Make it yours
-
-Update your docs to your brand and add valuable content for the best user conversion.
+**Postreach AI** is the industry-leading platform for automated social media content generation, powered by advanced AI models and sophisticated workflow orchestration. Our comprehensive API suite enables developers to integrate intelligent content creation directly into their applications.
 
 <CardGroup cols={2}>
   <Card
-    title="Customize Style"
-    icon="palette"
-    href="https://mintlify.com/docs/settings/global"
+    title="🚀 Quick Start"
+    icon="rocket"
+    href="/quickstart"
   >
-    Customize your docs to your company's colors and brands
+    Get up and running with Postreach AI in under 5 minutes
   </Card>
   <Card
-    title="Reference APIs"
+    title="📚 API Reference"
     icon="code"
-    href="https://mintlify.com/docs/api-playground/openapi"
+    href="/api-reference/introduction"
   >
-    Automatically generate endpoints from an OpenAPI spec
-  </Card>
-  <Card
-    title="Add Components"
-    icon="screwdriver-wrench"
-    href="https://mintlify.com/docs/content/components/accordions"
-  >
-    Build interactive features and designs to guide your users
-  </Card>
-  <Card
-    title="Get Inspiration"
-    icon="stars"
-    href="https://mintlify.com/customers"
-  >
-    Check out our showcase of our favorite documentation
+    Complete API documentation with interactive examples
   </Card>
 </CardGroup>
+
+## Core Capabilities
+
+Transform your social media strategy with our AI-powered content generation platform:
+
+<CardGroup cols={2}>
+  <Card
+    title="🎯 Smart Content Generation"
+    icon="pen-nib"
+    href="/api-reference/pipeline/generate-posts"
+  >
+    Generate high-quality posts across Facebook, Instagram, Twitter, and LinkedIn with intelligent platform optimization
+  </Card>
+  <Card
+    title="🤖 Interactive AI Chatbot"
+    icon="comments"
+    href="/api-reference/chatbot/chat-message"
+  >
+    Conversational AI interface supporting prompt-to-post, image-to-post, and URL analysis workflows
+  </Card>
+  <Card
+    title="🔍 Website Intelligence"
+    icon="globe"
+    href="/api-reference/website/analyze"
+  >
+    Extract brand identity, color palettes, and content insights from any website
+  </Card>
+  <Card
+    title="⚡ Interactive Playground"
+    icon="play"
+    href="/api-reference/playground"
+  >
+    Test all API endpoints directly in your browser with real-time parameter modification
+  </Card>
+</CardGroup>
+
+## Why Choose Postreach AI?
+
+<AccordionGroup>
+<Accordion title="🎨 Advanced Content Intelligence">
+Our AI models understand context, brand voice, and platform-specific optimization to generate content that resonates with your audience across all social media platforms.
+</Accordion>
+
+<Accordion title="🔧 Developer-First Design">
+RESTful APIs with comprehensive documentation, interactive playgrounds, and SDKs for popular programming languages. Built for seamless integration.
+</Accordion>
+
+<Accordion title="📊 Multi-Platform Optimization">
+Automatically optimize content for each platform's unique characteristics - character limits, engagement patterns, and audience behavior.
+</Accordion>
+
+<Accordion title="🛡️ Enterprise-Ready">
+Session-based authentication, rate limiting, comprehensive error handling, and detailed analytics for production deployments.
+</Accordion>
+</AccordionGroup>
+
+## Getting Started
+
+<Steps>
+<Step title="🔑 Get Your API Access">
+Sign up for a Postreach AI account and obtain your session credentials from the dashboard.
+
+<Card title="Create Account" icon="user-plus" href="https://dashboard.postreach.ai/signup">
+  Get started with our free tier - no credit card required
+</Card>
+</Step>
+
+<Step title="📖 Explore the API">
+Familiarize yourself with our comprehensive API endpoints and capabilities.
+
+<CodeGroup>
+```bash Quick Test
+curl -X POST 'https://api.postreach.ai/pipeline/generate' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: your-session-id' \
+  -d '{
+    "mode": "Autopilot",
+    "social_post_number": {"linkedin": 1, "twitter": 2},
+    "user_info": [{"type": "topic", "content": "AI trends 2024"}],
+    "schedule_start_date": "2024-01-20T09:00:00Z",
+    "schedule_end_date": "2024-01-27T18:00:00Z"
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post('https://api.postreach.ai/pipeline/generate', 
+  headers={'X-Session-ID': 'your-session-id'},
+  json={
+    'mode': 'Autopilot',
+    'social_post_number': {'linkedin': 1, 'twitter': 2},
+    'user_info': [{'type': 'topic', 'content': 'AI trends 2024'}],
+    'schedule_start_date': '2024-01-20T09:00:00Z',
+    'schedule_end_date': '2024-01-27T18:00:00Z'
+  })
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.postreach.ai/pipeline/generate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Session-ID': 'your-session-id'
+  },
+  body: JSON.stringify({
+    mode: 'Autopilot',
+    social_post_number: {linkedin: 1, twitter: 2},
+    user_info: [{type: 'topic', content: 'AI trends 2024'}],
+    schedule_start_date: '2024-01-20T09:00:00Z',
+    schedule_end_date: '2024-01-27T18:00:00Z'
+  })
+});
+```
+</CodeGroup>
+</Step>
+</Steps>
+
+## Popular Use Cases
+
+<CardGroup cols={3}>
+<Card title="📱 Social Media Management" icon="share-nodes">
+  Automate content creation for agencies managing multiple client accounts
+</Card>
+<Card title="🏢 Enterprise Marketing" icon="building">
+  Scale content production across global marketing teams and brand guidelines
+</Card>
+<Card title="🛍️ E-commerce Integration" icon="shopping-cart">
+  Generate product-focused content directly from product catalogs and URLs
+</Card>
+<Card title="📰 Content Creators" icon="newspaper">
+  Transform blog posts, articles, and news into engaging social media content
+</Card>
+<Card title="💼 SaaS Platforms" icon="laptop">
+  Embed AI-powered content generation directly into existing platforms
+</Card>
+<Card title="🤖 AI Applications" icon="robot">
+  Build sophisticated content workflows with our chatbot and pipeline APIs
+</Card>
+</CardGroup>
+
+## Support & Community
+
+<CardGroup cols={2}>
+<Card title="📞 Contact Support" icon="headset" href="mailto:support@postreach.ai">
+  Get help from our technical support team
+</Card>
+<Card title="💬 Join Community" icon="users" href="https://community.postreach.ai">
+  Connect with other developers and share experiences
+</Card>
+<Card title="📊 API Status" icon="signal" href="https://status.postreach.ai">
+  Real-time API status and performance monitoring
+</Card>
+<Card title="🔄 Changelog" icon="clock" href="/changelog">
+  Stay updated with the latest features and improvements
+</Card>
+</CardGroup>
+
+---
+
+<Note>
+Ready to revolutionize your content creation workflow? Dive into our [API Reference](/api-reference/introduction) or try our [Interactive Playground](/api-reference/playground) to see Postreach AI in action.
+</Note>

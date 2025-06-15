@@ -1,32 +1,79 @@
-# Mintlify Starter Kit
+# Postreach AI Documentation
 
-Click on `Use this template` to copy the Mintlify starter kit. The starter kit contains examples including
+Welcome to the official documentation repository for Postreach AI - the industry-leading platform for automated social media content generation.
 
-- Guide pages
-- Navigation
-- Customizations
-- API Reference pages
-- Use of popular components
+## 📚 What's Included
 
-### Development
+This documentation covers:
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+- **API Reference** - Complete documentation for all Postreach AI endpoints
+- **Interactive Playground** - Test APIs directly in your browser
+- **Quick Start Guide** - Get up and running in under 5 minutes
+- **Development Guide** - Best practices for production integrations
+- **SDK Examples** - Ready-to-use code in Python, JavaScript, and more
 
-```
+## 🚀 Key Features Documented
+
+- **Pipeline Generation** - Multi-platform social media post creation
+- **Interactive Chatbot** - Conversational AI for content generation
+- **Website Analysis** - Extract brand information and content insights
+- **Content Processing** - Keyword extraction and content optimization
+
+## 🔧 Local Development
+
+To preview documentation changes locally:
+
+1. Install the Mintlify CLI:
+```bash
 npm i -g mintlify
 ```
 
-Run the following command at the root of your documentation (where docs.json is)
-
-```
+2. Run the development server:
+```bash
 mintlify dev
 ```
 
-### Publishing Changes
+3. Open http://localhost:3000 to view the documentation
 
-Install our Github App to auto propagate changes from your repo to your deployment. Changes will be deployed to production automatically after pushing to the default branch. Find the link to install on your dashboard. 
+## 📝 Contributing
 
-#### Troubleshooting
+This documentation is automatically deployed when changes are pushed to the main branch. 
 
-- Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
-- Page loads as a 404 - Make sure you are running in a folder with `docs.json`
+### Making Changes
+
+1. Edit the relevant `.mdx` files in the appropriate directories
+2. Test changes locally using `mintlify dev`
+3. Commit and push to trigger automatic deployment
+
+### File Structure
+
+```
+docs/
+├── index.mdx                    # Main landing page
+├── quickstart.mdx              # Getting started guide
+├── development.mdx             # Development best practices
+├── api-reference/              # API endpoint documentation
+│   ├── introduction.mdx        # API overview
+│   ├── playground.mdx          # Interactive testing
+│   ├── openapi.json           # OpenAPI specification
+│   ├── pipeline/              # Pipeline endpoints
+│   ├── chatbot/              # Chatbot endpoints
+│   ├── content/              # Content processing
+│   └── website/              # Website analysis
+├── docs.json                  # Mintlify configuration
+└── logo/                     # Brand assets
+```
+
+## 🌐 Live Documentation
+
+The live documentation is available at: [docs.postreach.ai](https://docs.postreach.ai)
+
+## 📞 Support
+
+For documentation issues or suggestions:
+- **Email**: [support@postreach.ai](mailto:support@postreach.ai)
+- **Community**: [community.postreach.ai](https://community.postreach.ai)
+
+---
+
+Built with ❤️ by the Postreach AI team

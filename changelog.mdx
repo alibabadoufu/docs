@@ -1,0 +1,113 @@
+---
+title: 'Changelog'
+description: 'Track the latest updates, new features, and improvements to the Postreach AI API'
+---
+
+# API Changelog
+
+Stay up-to-date with the latest changes, improvements, and new features in the Postreach AI API. We follow semantic versioning and provide detailed release notes for each update.
+
+<Note>
+We recommend subscribing to our changelog updates to stay informed about breaking changes and new features that could benefit your integration.
+</Note>
+
+## Version 2.1.0
+<Update label="Version 2.1.0" description="Released January 15, 2024">
+
+### 🚀 New Features
+- **Enhanced Pipeline Generation**: Added support for custom brand voice analysis
+- **Multi-Platform Optimization**: Improved content adaptation for LinkedIn, Twitter, and Instagram
+- **Advanced Scheduling**: New scheduling options with timezone support
+- **Batch Processing**: Generate multiple posts in a single API call (up to 10 posts)
+
+### ✨ Improvements
+- **Response Times**: 40% faster response times for pipeline generation
+- **Error Handling**: More descriptive error messages with actionable suggestions
+- **Rate Limiting**: Increased rate limits for premium users
+- **Documentation**: Interactive API playground with real-time testing
+
+### 🐛 Bug Fixes
+- Fixed issue with special characters in social media content
+- Resolved timeout issues for large image processing
+- Fixed pagination bug in agent listing endpoint
+- Corrected timezone handling in scheduled posts
+
+### ⚠️ Breaking Changes
+- `POST /api/v1/pipeline/generate` now requires `platform_config` parameter
+- Deprecated `simple_mode` parameter (use `mode: "autopilot"` instead)
+- Changed response format for batch operations
+
+</Update>
+
+## Version 2.0.5
+<Update label="Version 2.0.5" description="Released December 20, 2023">
+
+### ✨ Improvements
+- **Chatbot Streaming**: Enhanced streaming response stability
+- **Website Analysis**: Improved logo and brand color extraction accuracy
+- **Content Quality**: Better keyword relevance scoring
+- **Performance**: Reduced memory usage for large content processing
+
+### 🐛 Bug Fixes
+- Fixed streaming connection drops in chatbot endpoints
+- Resolved issue with URL analysis for websites with redirects
+- Fixed character encoding issues in non-English content
+- Corrected agent role assignment validation
+
+</Update>
+
+## Version 2.0.0
+<Update label="Version 2.0.0" description="Released November 30, 2023">
+
+### 🚀 Major Release - New Architecture
+
+### 🚀 New Features
+- **Complete API Redesign**: New RESTful architecture with improved consistency
+- **Agent Management System**: Full CRUD operations for AI agents
+- **Advanced Chatbot**: Multi-mode chat with image, URL, and prompt processing
+- **Website Analysis**: Comprehensive website content and brand analysis
+- **Real-time Streaming**: Server-sent events for long-running operations
+
+### ✨ Improvements
+- **Authentication**: New session-based authentication system
+- **Error Handling**: Standardized error responses across all endpoints
+- **Documentation**: Complete API reference with interactive examples
+- **Performance**: 60% improvement in average response times
+
+### ⚠️ Breaking Changes
+- **API Base URL**: Changed from `/v1/` to `/api/v1/`
+- **Authentication**: Migrated from API keys to session-based auth
+- **Response Format**: Standardized response structure across all endpoints
+- **Endpoint Naming**: Updated endpoint paths for consistency
+
+</Update>
+
+## Upcoming Features
+
+<Info>
+Here's what we're working on for future releases. These features are in development and subject to change.
+</Info>
+
+### Version 2.2.0 (Q2 2024)
+- **Video Content Generation**: AI-powered video script creation
+- **Advanced Analytics**: Detailed performance tracking and insights
+- **Team Collaboration**: Multi-user workspace management
+- **Custom AI Models**: Train personalized content generation models
+
+### Version 2.3.0 (Q3 2024)
+- **Integration Hub**: Direct connections to major social platforms
+- **Content Calendar**: Advanced scheduling and planning tools
+- **A/B Testing**: Built-in content variation testing
+- **Compliance Tools**: Industry-specific content guidelines
+
+## Stay Updated
+
+<CardGroup cols={2}>
+<Card title="Subscribe to Updates" icon="bell" href="mailto:api-updates@postreach.ai">
+  Get notified about new releases and breaking changes
+</Card>
+
+<Card title="GitHub Releases" icon="github" href="https://github.com/postreach-ai/api/releases">
+  Follow our GitHub repository for detailed technical changes
+</Card>
+</CardGroup> 

@@ -1,0 +1,414 @@
+---
+title: 'Generate Social Media Posts'
+description: 'Create automated social media posts across multiple platforms using AI-powered content generation'
+---
+
+## Overview
+
+The social media post generation pipeline is the core feature of Postreach AI. This endpoint orchestrates the entire content creation process, from keyword extraction to final post generation across multiple social media platforms.
+
+<Info>
+This endpoint supports both **Autopilot** and **Manual** modes, with Autopilot providing fully automated content generation and Manual mode allowing for more granular control.
+</Info>
+
+## Request
+
+<ParamField path="mode" type="string" default="Autopilot">
+Generation mode. Options: `Autopilot` (fully automated) or `Manual` (step-by-step control)
+</ParamField>
+
+<ParamField path="social_post_number" type="object" required>
+Number of posts to generate for each platform
+
+<Expandable title="Platform Configuration">
+<ParamField path="facebook" type="integer" default="1">
+Number of Facebook posts to generate (1-10)
+</ParamField>
+
+<ParamField path="instagram" type="integer" default="1">
+Number of Instagram posts to generate (1-10)
+</ParamField>
+
+<ParamField path="twitter" type="integer" default="1">
+Number of Twitter/X posts to generate (1-10)
+</ParamField>
+
+<ParamField path="linkedin" type="integer" default="1">
+Number of LinkedIn posts to generate (1-10)
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField path="user_info" type="array" required>
+Array of user information items containing URLs, topics, or context for content generation
+
+<Expandable title="User Info Structure">
+<ParamField path="type" type="string" required>
+Type of information: `url`, `topic`, `text`, or `keyword`
+</ParamField>
+
+<ParamField path="content" type="string" required>
+The actual content (URL, topic text, etc.)
+</ParamField>
+
+<ParamField path="weight" type="number" default="1.0">
+Importance weight for this information (0.1-2.0)
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField path="schedule_start_date" type="string" required>
+Start date for post scheduling in ISO 8601 format (e.g., "2024-01-15T10:00:00Z")
+</ParamField>
+
+<ParamField path="schedule_end_date" type="string" required>
+End date for post scheduling in ISO 8601 format
+</ParamField>
+
+<ParamField path="country" type="string">
+Target country for localization (e.g., "US", "UK", "CA")
+</ParamField>
+
+<ParamField path="language" type="string">
+Target language for content generation (e.g., "en", "es", "fr")
+</ParamField>
+
+<ParamField path="session_id" type="string">
+Session identifier for request tracking
+</ParamField>
+
+<ParamField path="track_id" type="string">
+Tracking identifier for analytics
+</ParamField>
+
+<ParamField path="user_id" type="string">
+User identifier for personalization
+</ParamField>
+
+### Advanced Configuration
+
+<AccordionGroup>
+<Accordion title="Content Length Settings">
+<ParamField path="idea_word_count" type="integer" default="1500">
+Target word count for idea generation (500-3000)
+</ParamField>
+
+<ParamField path="draft_post_article_word_count" type="integer" default="1000">
+Word count for draft article generation (300-2000)
+</ParamField>
+
+<ParamField path="image_prompt_word_count" type="integer" default="1000">
+Word count for image prompt generation (100-1500)
+</ParamField>
+</Accordion>
+
+<Accordion title="Platform-Specific Character Limits">
+<ParamField path="twitter_char_count" type="integer" default="280">
+Character limit for Twitter posts (1-280)
+</ParamField>
+
+<ParamField path="instagram_char_count" type="integer" default="2200">
+Character limit for Instagram posts (1-2200)
+</ParamField>
+
+<ParamField path="linkedin_char_count" type="integer" default="3000">
+Character limit for LinkedIn posts (1-3000)
+</ParamField>
+
+<ParamField path="facebook_char_count" type="integer" default="2000">
+Character limit for Facebook posts (1-2000)
+</ParamField>
+</Accordion>
+
+<Accordion title="Task Version Control">
+<ParamField path="url_keyword_extraction_task_version" type="integer" default="1">
+Version of the keyword extraction task to use
+</ParamField>
+
+<ParamField path="idea_generation_task_version" type="integer" default="1">
+Version of the idea generation task to use
+</ParamField>
+
+<ParamField path="draft_post_generation_task_version" type="integer" default="1">
+Version of the draft post generation task to use
+</ParamField>
+
+<ParamField path="image_generation_task_version" type="integer" default="1">
+Version of the image generation task to use
+</ParamField>
+</Accordion>
+
+<Accordion title="Development Options">
+<ParamField path="is_dummy_post" type="boolean" default="false">
+Generate dummy posts for testing purposes
+</ParamField>
+
+<ParamField path="use_fake_image" type="boolean" default="false">
+Use placeholder images instead of generating real images
+</ParamField>
+</Accordion>
+</AccordionGroup>
+
+## Response
+
+<ResponseField name="id" type="string">
+Unique identifier for the generated pipeline
+</ResponseField>
+
+<ResponseField name="result_id" type="string">
+Identifier for accessing the generation results
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Current status: `processing`, `completed`, `failed`
+</ResponseField>
+
+<ResponseField name="posts" type="array">
+Array of generated social media posts
+
+<Expandable title="Post Structure">
+<ResponseField name="id" type="string">
+Unique post identifier
+</ResponseField>
+
+<ResponseField name="platform" type="string">
+Target platform: `facebook`, `instagram`, `twitter`, `linkedin`
+</ResponseField>
+
+<ResponseField name="content" type="string">
+Generated post content/caption
+</ResponseField>
+
+<ResponseField name="image_url" type="string">
+URL to the generated image (if applicable)
+</ResponseField>
+
+<ResponseField name="image_prompt" type="string">
+Prompt used for image generation
+</ResponseField>
+
+<ResponseField name="scheduled_time" type="string">
+ISO 8601 timestamp for when the post should be published
+</ResponseField>
+
+<ResponseField name="hashtags" type="array">
+Array of relevant hashtags
+</ResponseField>
+
+<ResponseField name="engagement_score" type="number">
+Predicted engagement score (0-100)
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+<ResponseField name="execution_time" type="number">
+Total processing time in seconds
+</ResponseField>
+
+<ResponseField name="completed_at" type="string">
+ISO 8601 timestamp when processing completed
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if generation failed
+</ResponseField>
+
+## Examples
+
+### Basic Post Generation
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/pipeline/generate' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_123' \
+  -d '{
+    "mode": "Autopilot",
+    "social_post_number": {
+      "facebook": 2,
+      "instagram": 2,
+      "twitter": 3,
+      "linkedin": 1
+    },
+    "user_info": [
+      {
+        "type": "url",
+        "content": "https://techcrunch.com/2024/01/15/ai-breakthrough-2024",
+        "weight": 1.5
+      },
+      {
+        "type": "topic",
+        "content": "artificial intelligence trends",
+        "weight": 1.0
+      }
+    ],
+    "schedule_start_date": "2024-01-20T09:00:00Z",
+    "schedule_end_date": "2024-01-27T18:00:00Z",
+    "country": "US",
+    "language": "en",
+    "user_id": "user_456"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "id": "pipeline_789",
+  "result_id": "result_101112",
+  "status": "completed",
+  "posts": [
+    {
+      "id": "post_001",
+      "platform": "facebook",
+      "content": "🚀 The future of AI is here! New breakthrough technologies are reshaping how we interact with digital content. What are your thoughts on AI's impact on creativity? #AI #Technology #Innovation",
+      "image_url": "https://images.postreach.ai/generated/img_001.jpg",
+      "image_prompt": "Futuristic AI technology concept with neural networks and digital interfaces",
+      "scheduled_time": "2024-01-20T10:30:00Z",
+      "hashtags": ["#AI", "#Technology", "#Innovation", "#Future"],
+      "engagement_score": 87.5
+    },
+    {
+      "id": "post_002",
+      "platform": "twitter",
+      "content": "AI breakthrough alert! 🤖 The latest developments in artificial intelligence are mind-blowing. Thread below 👇 #AIRevolution #TechNews",
+      "image_url": "https://images.postreach.ai/generated/img_002.jpg",
+      "scheduled_time": "2024-01-20T14:15:00Z",
+      "hashtags": ["#AIRevolution", "#TechNews", "#AI"],
+      "engagement_score": 92.1
+    }
+  ],
+  "execution_time": 45.7,
+  "completed_at": "2024-01-15T11:45:30Z",
+  "created_at": "2024-01-15T11:00:00Z"
+}
+```
+</ResponseExample>
+
+### Manual Mode with Custom Settings
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/pipeline/generate' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_456' \
+  -d '{
+    "mode": "Manual",
+    "social_post_number": {
+      "linkedin": 1,
+      "twitter": 2
+    },
+    "user_info": [
+      {
+        "type": "text",
+        "content": "Discussing the impact of remote work on team productivity and collaboration tools",
+        "weight": 2.0
+      }
+    ],
+    "schedule_start_date": "2024-01-25T08:00:00Z",
+    "schedule_end_date": "2024-01-25T20:00:00Z",
+    "linkedin_char_count": 1500,
+    "twitter_char_count": 240,
+    "idea_word_count": 800,
+    "country": "CA",
+    "language": "en"
+  }'
+```
+</RequestExample>
+
+## Error Handling
+
+<Warning>
+Pipeline generation can fail at various stages. Always check the `status` field and handle errors appropriately.
+</Warning>
+
+### Common Error Scenarios
+
+<AccordionGroup>
+<Accordion title="Invalid Date Format">
+```json
+{
+  "status": "failed",
+  "error": "schedule_start_date must be in ISO 8601 format (e.g., '2025-01-02T00:00:00')",
+  "execution_time": 0.12
+}
+```
+</Accordion>
+
+<Accordion title="Invalid Social Post Numbers">
+```json
+{
+  "status": "failed",
+  "error": "social_post_number values must be between 1 and 10",
+  "execution_time": 0.08
+}
+```
+</Accordion>
+
+<Accordion title="Processing Timeout">
+```json
+{
+  "status": "failed",
+  "error": "Pipeline generation timed out after 300 seconds",
+  "execution_time": 300.0
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Tip>
+**Performance Optimization**: For better results, provide specific and relevant user information. URLs to recent articles or clear topic descriptions yield higher-quality content.
+</Tip>
+
+<Steps>
+<Step title="Prepare Your Content Sources">
+Gather URLs, topics, or text content that will serve as the foundation for your social media posts.
+
+<Check>
+Ensure URLs are accessible and contain meaningful content.
+</Check>
+</Step>
+
+<Step title="Configure Platform Settings">
+Set appropriate character limits and post counts for each platform based on your content strategy.
+
+<Note>
+Different platforms have different optimal posting frequencies and content styles.
+</Note>
+</Step>
+
+<Step title="Set Realistic Schedules">
+Provide reasonable time windows for post scheduling. Consider your audience's time zones and peak engagement hours.
+</Step>
+
+<Step title="Monitor Generation Status">
+Use the `result_id` to check the status of long-running pipeline generations.
+
+```bash
+curl -X GET 'https://api.postreach.ai/results/result_101112' \
+  -H 'X-Session-ID: session_123'
+```
+</Step>
+</Steps>
+
+## Related Endpoints
+
+<CardGroup cols={2}>
+<Card title="Get Results" icon="chart-line" href="/api-reference/pipeline/get-results">
+  Retrieve the results of a completed pipeline generation
+</Card>
+
+<Card title="Regenerate Posts" icon="arrows-rotate" href="/api-reference/pipeline/regenerate-posts">
+  Regenerate specific posts with different parameters
+</Card>
+
+<Card title="Search Pipelines" icon="magnifying-glass" href="/api-reference/pipeline/search-pipelines">
+  Search and filter previous pipeline generations
+</Card>
+
+<Card title="Pipeline History" icon="clock-rotate-left" href="/api-reference/pipeline/get-pipeline">
+  View detailed history and configuration of past pipelines
+</Card>
+</CardGroup> 

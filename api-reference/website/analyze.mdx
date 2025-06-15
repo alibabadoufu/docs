@@ -1,0 +1,623 @@
+---
+title: 'Analyze Website'
+description: 'Extract comprehensive information from websites including company details, brand identity, and content for social media generation'
+---
+
+## Overview
+
+The website analysis endpoint provides comprehensive extraction and analysis of website content, including company information, brand identity, visual elements, and content structure. This information is essential for creating targeted social media content that aligns with a brand's voice and identity.
+
+<Info>
+Website analysis combines web scraping, computer vision, and natural language processing to extract meaningful insights from any website in a single API call.
+</Info>
+
+## Request
+
+<ParamField path="url" type="string" required>
+The website URL to analyze. Must include protocol (http:// or https://)
+</ParamField>
+
+<ParamField path="include_logo" type="boolean" default="true">
+Whether to extract and analyze the company logo
+</ParamField>
+
+<ParamField path="include_colors" type="boolean" default="true">
+Whether to extract brand color palette from the website
+</ParamField>
+
+<ParamField path="include_brand" type="boolean" default="true">
+Whether to analyze brand identity and voice characteristics
+</ParamField>
+
+<ParamField path="additional_fields" type="array">
+List of additional fields to extract from the website
+
+<Expandable title="Available Additional Fields">
+<ParamField path="social_links" type="boolean">
+Extract social media profile links
+</ParamField>
+
+<ParamField path="contact_info" type="boolean">
+Extract contact information (phone, email, address)
+</ParamField>
+
+<ParamField path="team_info" type="boolean">
+Extract team member information
+</ParamField>
+
+<ParamField path="product_info" type="boolean">
+Extract product or service information
+</ParamField>
+
+<ParamField path="pricing_info" type="boolean">
+Extract pricing information if available
+</ParamField>
+
+<ParamField path="blog_posts" type="boolean">
+Extract recent blog posts or news articles
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField path="session_id" type="string">
+Session identifier for request tracking
+</ParamField>
+
+<ParamField path="track_id" type="string">
+Tracking identifier for analytics
+</ParamField>
+
+## Response
+
+<ResponseField name="analysis_id" type="string">
+Unique identifier for this website analysis
+</ResponseField>
+
+<ResponseField name="url" type="string">
+The analyzed website URL
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Analysis status: `processing`, `partial`, `success`, `failed`
+</ResponseField>
+
+<ResponseField name="company_name" type="string">
+Extracted company or organization name
+</ResponseField>
+
+<ResponseField name="company_info" type="string">
+Comprehensive company description and information
+</ResponseField>
+
+<ResponseField name="logo_url" type="string">
+URL to the extracted company logo image
+</ResponseField>
+
+<ResponseField name="brand_identity" type="string">
+Detailed brand identity analysis and description
+</ResponseField>
+
+<ResponseField name="brand_voice" type="object">
+Brand voice characteristics and communication style
+
+<Expandable title="Brand Voice Analysis">
+<ResponseField name="tone" type="string">
+Overall communication tone: `professional`, `friendly`, `authoritative`, `casual`, `innovative`
+</ResponseField>
+
+<ResponseField name="personality" type="array">
+Brand personality traits (e.g., "innovative", "trustworthy", "approachable")
+</ResponseField>
+
+<ResponseField name="communication_style" type="string">
+Detailed analysis of how the brand communicates
+</ResponseField>
+
+<ResponseField name="target_audience" type="string">
+Identified target audience based on content and messaging
+</ResponseField>
+
+<ResponseField name="key_messages" type="array">
+Main messages and value propositions
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+<ResponseField name="color_palette" type="array">
+Dominant colors extracted from the website (maximum 3)
+
+<Expandable title="Color Information">
+<ResponseField name="hex" type="string">
+Hexadecimal color code
+</ResponseField>
+
+<ResponseField name="rgb" type="object">
+RGB color values
+</ResponseField>
+
+<ResponseField name="name" type="string">
+Human-readable color name
+</ResponseField>
+
+<ResponseField name="prominence" type="number">
+How prominent this color is on the website (0-100)
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+<ResponseField name="website_content" type="string">
+Extracted and cleaned website content
+</ResponseField>
+
+<ResponseField name="additional_info" type="object">
+Additional extracted information based on requested fields
+
+<Expandable title="Additional Information Types">
+<ResponseField name="social_links" type="object">
+Social media profile URLs
+</ResponseField>
+
+<ResponseField name="contact_info" type="object">
+Contact information including phone, email, address
+</ResponseField>
+
+<ResponseField name="team_info" type="array">
+Team member information
+</ResponseField>
+
+<ResponseField name="products" type="array">
+Product or service information
+</ResponseField>
+
+<ResponseField name="pricing" type="object">
+Pricing tiers and information
+</ResponseField>
+
+<ResponseField name="recent_posts" type="array">
+Recent blog posts or news articles
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+<ResponseField name="processing_time" type="number">
+Time taken to complete the analysis in seconds
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+ISO 8601 timestamp when analysis was created
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if analysis failed
+</ResponseField>
+
+## Examples
+
+### Basic Website Analysis
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/website/analyze' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_123' \
+  -d '{
+    "url": "https://www.openai.com",
+    "include_logo": true,
+    "include_colors": true,
+    "include_brand": true
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "analysis_id": "analysis_abc123",
+  "url": "https://www.openai.com",
+  "status": "success",
+  "company_name": "OpenAI",
+  "company_info": "OpenAI is an AI research and deployment company focused on creating artificial general intelligence (AGI) that benefits all of humanity. Founded in 2015, the company develops advanced AI systems including GPT models, DALL-E, and ChatGPT. OpenAI is committed to ensuring that artificial general intelligence is developed safely and shared broadly.",
+  "logo_url": "https://images.postreach.ai/extracted/openai_logo_abc123.png",
+  "brand_identity": "OpenAI positions itself as a responsible AI pioneer focused on safety, transparency, and democratizing access to advanced AI technologies. The brand emphasizes scientific rigor, ethical AI development, and the potential for AI to solve humanity's greatest challenges.",
+  "brand_voice": {
+    "tone": "professional",
+    "personality": ["innovative", "trustworthy", "scientific", "forward-thinking", "responsible"],
+    "communication_style": "OpenAI communicates with clarity and authority, balancing technical expertise with accessibility. They emphasize transparency about AI capabilities and limitations, often using concrete examples and research-backed claims.",
+    "target_audience": "Researchers, developers, businesses, and policymakers interested in AI technology and its societal impact",
+    "key_messages": [
+      "Building safe AGI that benefits all humanity",
+      "Transparency and responsible AI development",
+      "Democratizing access to powerful AI tools",
+      "Advancing the field of AI research"
+    ]
+  },
+  "color_palette": [
+    {
+      "hex": "#1a1a1a",
+      "rgb": {"r": 26, "g": 26, "b": 26},
+      "name": "Deep Black",
+      "prominence": 92.5
+    },
+    {
+      "hex": "#ffffff",
+      "rgb": {"r": 255, "g": 255, "b": 255},
+      "name": "White",
+      "prominence": 87.3
+    },
+    {
+      "hex": "#10a37f",
+      "rgb": {"r": 16, "g": 163, "b": 127},
+      "name": "Teal Green",
+      "prominence": 78.9
+    }
+  ],
+  "website_content": "OpenAI is an AI research and deployment company. Our mission is to ensure that artificial general intelligence (AGI) benefits all of humanity. We're building safe, beneficial AGI, and we want AGI to be used for the benefit of all people...",
+  "additional_info": {},
+  "processing_time": 12.7,
+  "created_at": "2024-01-15T14:30:00Z"
+}
+```
+</ResponseExample>
+
+### Comprehensive Analysis with Additional Fields
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/website/analyze' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_456' \
+  -d '{
+    "url": "https://www.shopify.com",
+    "include_logo": true,
+    "include_colors": true,
+    "include_brand": true,
+    "additional_fields": [
+      "social_links",
+      "contact_info",
+      "product_info",
+      "pricing_info",
+      "blog_posts"
+    ]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Comprehensive Analysis
+{
+  "analysis_id": "analysis_def456",
+  "url": "https://www.shopify.com",
+  "status": "success",
+  "company_name": "Shopify",
+  "company_info": "Shopify is a leading e-commerce platform that enables individuals and businesses to create, customize, and manage online stores. Founded in 2006, Shopify powers over 1 million businesses worldwide with comprehensive tools for selling online, in-person, and everywhere in between.",
+  "logo_url": "https://images.postreach.ai/extracted/shopify_logo_def456.png",
+  "brand_identity": "Shopify empowers entrepreneurs and businesses to build and grow their online presence. The brand focuses on simplicity, empowerment, and making commerce accessible to everyone, regardless of technical expertise.",
+  "brand_voice": {
+    "tone": "friendly",
+    "personality": ["empowering", "approachable", "innovative", "supportive", "entrepreneurial"],
+    "communication_style": "Shopify uses encouraging, solution-focused language that speaks directly to entrepreneurs' challenges and aspirations. They emphasize empowerment and growth potential.",
+    "target_audience": "Entrepreneurs, small to medium businesses, enterprise companies looking to sell online",
+    "key_messages": [
+      "Start, grow, and manage your business",
+      "Everything you need to sell online",
+      "Empowering entrepreneurs worldwide",
+      "Simplified e-commerce solutions"
+    ]
+  },
+  "color_palette": [
+    {
+      "hex": "#96bf48",
+      "rgb": {"r": 150, "g": 191, "b": 72},
+      "name": "Shopify Green",
+      "prominence": 95.2
+    },
+    {
+      "hex": "#ffffff",
+      "rgb": {"r": 255, "g": 255, "b": 255},
+      "name": "White",
+      "prominence": 89.1
+    },
+    {
+      "hex": "#202020",
+      "rgb": {"r": 32, "g": 32, "b": 32},
+      "name": "Dark Gray",
+      "prominence": 76.8
+    }
+  ],
+  "website_content": "Shopify is a commerce platform that allows anyone to set up an online store and sell their products. Merchants can also sell their products in person with Shopify POS...",
+  "additional_info": {
+    "social_links": {
+      "twitter": "https://twitter.com/shopify",
+      "facebook": "https://www.facebook.com/shopify",
+      "instagram": "https://www.instagram.com/shopify",
+      "linkedin": "https://www.linkedin.com/company/shopify",
+      "youtube": "https://www.youtube.com/user/shopify"
+    },
+    "contact_info": {
+      "phone": "+1-888-746-7439",
+      "email": "support@shopify.com",
+      "address": "151 O'Connor Street, Ground floor, Ottawa, ON K2P 2L8, Canada"
+    },
+    "products": [
+      {
+        "name": "Shopify",
+        "description": "Complete e-commerce platform for businesses of all sizes",
+        "category": "E-commerce Platform"
+      },
+      {
+        "name": "Shopify Plus",
+        "description": "Enterprise e-commerce platform for high-volume merchants",
+        "category": "Enterprise Solution"
+      },
+      {
+        "name": "Shopify POS",
+        "description": "Point of sale system for in-person sales",
+        "category": "Point of Sale"
+      }
+    ],
+    "pricing": {
+      "basic": {
+        "name": "Basic Shopify",
+        "price": "$29/month",
+        "features": ["Online store", "Unlimited products", "24/7 support"]
+      },
+      "standard": {
+        "name": "Shopify",
+        "price": "$79/month",
+        "features": ["Everything in Basic", "Professional reports", "Gift cards"]
+      },
+      "advanced": {
+        "name": "Advanced Shopify",
+        "price": "$299/month",
+        "features": ["Everything in Shopify", "Advanced report builder", "Third-party calculated shipping rates"]
+      }
+    },
+    "recent_posts": [
+      {
+        "title": "10 E-commerce Trends to Watch in 2024",
+        "url": "https://www.shopify.com/blog/ecommerce-trends-2024",
+        "date": "2024-01-10",
+        "excerpt": "Explore the latest trends shaping the e-commerce landscape this year..."
+      },
+      {
+        "title": "How to Optimize Your Online Store for Mobile",
+        "url": "https://www.shopify.com/blog/mobile-optimization",
+        "date": "2024-01-08",
+        "excerpt": "Mobile commerce is growing rapidly. Learn how to ensure your store is mobile-ready..."
+      }
+    ]
+  },
+  "processing_time": 18.4,
+  "created_at": "2024-01-15T15:15:00Z"
+}
+```
+</ResponseExample>
+
+### Partial Analysis (Some Elements Failed)
+
+<ResponseExample>
+```json Partial Success
+{
+  "analysis_id": "analysis_ghi789",
+  "url": "https://example-private-site.com",
+  "status": "partial",
+  "company_name": "Example Company",
+  "company_info": "Example Company provides software solutions for businesses. Founded in 2020, the company focuses on productivity tools and workflow automation.",
+  "logo_url": null,
+  "brand_identity": "Example Company positions itself as a modern, efficient solution provider focused on simplifying business processes.",
+  "brand_voice": {
+    "tone": "professional",
+    "personality": ["efficient", "modern", "solution-oriented"],
+    "communication_style": "Direct and focused on business benefits",
+    "target_audience": "Business professionals and teams",
+    "key_messages": ["Streamline your workflow", "Boost productivity"]
+  },
+  "color_palette": [],
+  "website_content": "Example Company software solutions workflow automation productivity...",
+  "additional_info": {},
+  "processing_time": 8.2,
+  "created_at": "2024-01-15T16:00:00Z",
+  "error": "Partial analysis: Logo extraction failed due to access restrictions. Color palette extraction failed - insufficient visual content accessible."
+}
+```
+</ResponseExample>
+
+## Analysis Status Types
+
+<AccordionGroup>
+<Accordion title="processing">
+Analysis is currently in progress. This status is typically brief as most analyses complete quickly.
+</Accordion>
+
+<Accordion title="success">
+Analysis completed successfully with all requested information extracted.
+</Accordion>
+
+<Accordion title="partial">
+Analysis completed but some elements failed to extract. Check the `error` field for details about what failed.
+</Accordion>
+
+<Accordion title="failed">
+Analysis failed completely. Check the `error` field for the reason.
+</Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+<Tabs>
+<Tab title="Social Media Strategy">
+Use extracted brand voice and visual identity to create consistent social media content that aligns with the company's existing brand.
+</Tab>
+
+<Tab title="Competitive Analysis">
+Analyze competitor websites to understand their positioning, messaging, and visual identity for strategic planning.
+</Tab>
+
+<Tab title="Content Personalization">
+Extract company information to personalize content generation and ensure relevance to the target audience.
+</Tab>
+
+<Tab title="Brand Alignment">
+Ensure generated content matches the brand's tone, style, and visual identity by using extracted brand characteristics.
+</Tab>
+</Tabs>
+
+## Integration with Content Generation
+
+<Steps>
+<Step title="Analyze the Website">
+Use this endpoint to extract comprehensive brand information from a client's website.
+
+<Check>
+Store the analysis_id for future reference and to avoid re-analyzing the same website.
+</Check>
+</Step>
+
+<Step title="Extract Brand Guidelines">
+Use the brand_voice, color_palette, and brand_identity information to inform content generation.
+
+```python
+# Example: Using analysis for content generation
+brand_voice = analysis['brand_voice']
+content_prompt = f"""
+Create social media content that matches this brand voice:
+- Tone: {brand_voice['tone']}
+- Personality: {', '.join(brand_voice['personality'])}
+- Target Audience: {brand_voice['target_audience']}
+- Key Messages: {brand_voice['key_messages']}
+"""
+```
+</Step>
+
+<Step title="Generate Branded Content">
+Pass the extracted brand information to content generation endpoints for consistent, on-brand social media posts.
+
+<Note>
+The brand analysis can be reused for multiple content generation requests, saving time and ensuring consistency.
+</Note>
+</Step>
+</Steps>
+
+## Error Handling
+
+### Common Errors
+
+<AccordionGroup>
+<Accordion title="Website Access Denied">
+```json
+{
+  "status": "failed",
+  "error": "Access denied: Website blocks automated access (403 Forbidden)"
+}
+```
+
+**Solution**: Some websites block scraping. Try accessing the website manually to verify it's publicly accessible.
+</Accordion>
+
+<Accordion title="Invalid URL">
+```json
+{
+  "status": "failed",
+  "error": "Invalid URL format. Please include protocol (http:// or https://)"
+}
+```
+
+**Solution**: Ensure the URL includes the protocol and is properly formatted.
+</Accordion>
+
+<Accordion title="Timeout">
+```json
+{
+  "status": "failed",
+  "error": "Website analysis timeout after 60 seconds"
+}
+```
+
+**Solution**: The website may be slow to respond. Try again or contact support if the issue persists.
+</Accordion>
+
+<Accordion title="Insufficient Content">
+```json
+{
+  "status": "partial",
+  "error": "Limited content available: Website appears to be primarily JavaScript-based with minimal accessible content"
+}
+```
+
+**Solution**: Single-page applications and heavily JavaScript-based sites may have limited extractable content.
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Tip>
+**Performance Optimization**: Website analysis can take 10-60 seconds depending on site complexity. Consider caching results and running analysis asynchronously.
+</Tip>
+
+<Steps>
+<Step title="Validate URLs First">
+Ensure URLs are properly formatted and accessible before sending to the API.
+
+```python
+import re
+from urllib.parse import urlparse
+
+def validate_url(url):
+    if not re.match(r'^https?://', url):
+        return False
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except:
+        return False
+```
+</Step>
+
+<Step title="Cache Analysis Results">
+Store analysis results to avoid repeated API calls for the same website.
+
+<Check>
+Analysis results remain relevant for weeks or months unless the website undergoes major changes.
+</Check>
+</Step>
+
+<Step title="Handle Partial Results Gracefully">
+Always check the status and handle partial results appropriately in your application.
+
+```python
+if analysis['status'] == 'partial':
+    # Use available data but inform user of limitations
+    available_data = {k: v for k, v in analysis.items() if v is not None}
+    # Log what failed for debugging
+    logger.warning(f"Partial analysis: {analysis.get('error', 'Unknown issue')}")
+```
+</Step>
+
+<Step title="Use Additional Fields Selectively">
+Only request additional fields you actually need to minimize processing time and costs.
+
+<Note>
+Each additional field increases processing time by 1-3 seconds.
+</Note>
+</Step>
+</Steps>
+
+## Related Endpoints
+
+<CardGroup cols={2}>
+<Card title="Get Analysis" icon="search" href="/api-reference/website/get-analysis">
+  Retrieve a previously completed website analysis
+</Card>
+
+<Card title="List Analyses" icon="list" href="/api-reference/website/list-analyses">
+  View all website analyses with filtering options
+</Card>
+
+<Card title="Extract Keywords" icon="key" href="/api-reference/content/extract-keywords">
+  Extract keywords from analyzed website content
+</Card>
+
+<Card title="Generate Posts" icon="pen-nib" href="/api-reference/pipeline/generate-posts">
+  Create social media posts using website analysis data
+</Card>
+</CardGroup> 

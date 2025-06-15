@@ -1,94 +1,89 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
+    "title": "Postreach AI API",
+    "description": "Comprehensive API for automated social media content generation, agent management, and workflow orchestration",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Postreach AI Support",
+      "email": "support@postreach.ai",
+      "url": "https://docs.postreach.ai"
     },
-    "version": "1.0.0"
+    "license": {
+      "name": "Proprietary",
+      "url": "https://postreach.ai/terms"
+    }
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://postreachai-ekc4e7fke7bacehe.southeastasia-01.azurewebsites.net/api/v1",
+      "description": "Production API Server"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "sessionAuth": []
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+    "/pipeline/generate": {
+      "post": {
+        "tags": ["Pipeline Operations"],
+        "summary": "Generate Social Media Posts",
+        "description": "Create automated social media posts across multiple platforms using AI-powered content generation",
+        "operationId": "generateSocialMediaPosts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PipelineRequest"
+              },
+              "examples": {
+                "basic_generation": {
+                  "summary": "Basic Post Generation",
+                  "value": {
+                    "mode": "Autopilot",
+                    "social_post_number": {
+                      "facebook": 2,
+                      "instagram": 2,
+                      "twitter": 3,
+                      "linkedin": 1
+                    },
+                    "user_info": [
+                      {
+                        "type": "url",
+                        "content": "https://techcrunch.com/2024/01/15/ai-breakthrough-2024",
+                        "weight": 1.5
+                      }
+                    ],
+                    "schedule_start_date": "2024-01-20T09:00:00Z",
+                    "schedule_end_date": "2024-01-27T18:00:00Z",
+                    "country": "US",
+                    "language": "en"
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
           }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Pipeline generation initiated successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/PipelineResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Invalid request parameters",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -96,122 +91,474 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/results/{result_id}": {
+      "get": {
+        "tags": ["Pipeline Operations"],
+        "summary": "Get Pipeline Results",
+        "description": "Retrieve the results of a completed social media post generation pipeline",
+        "operationId": "getPipelineResults",
         "parameters": [
           {
-            "name": "id",
+            "name": "result_id",
             "in": "path",
-            "description": "ID of plant to delete",
             "required": true,
+            "description": "The unique identifier for the pipeline result",
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string",
+              "example": "pipeline-abc123-result-456789"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Pipeline results retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/GetResultResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Result not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    },
+    "/chatbot/message": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "tags": ["Chatbot Integration"],
+        "summary": "Process Chat Message",
+        "description": "Send messages to the AI chatbot for interactive content generation and conversation",
+        "operationId": "processChatMessage",
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/ChatbotRequest"
+              },
+              "examples": {
+                "linkedin_post": {
+                  "summary": "Generate LinkedIn Post",
+                  "value": {
+                    "message": {
+                      "content": "Help me create a LinkedIn post about the benefits of remote work",
+                      "type": "text"
+                    },
+                    "mode": "prompt2post",
+                    "user_background": {
+                      "industry": "Technology",
+                      "tone": "professional",
+                      "target_audience": "Software developers and tech professionals",
+                      "platforms": ["linkedin"]
+                    }
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Chat message processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatbotResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/content/extract-keywords": {
+      "post": {
+        "tags": ["Content Generation"],
+        "summary": "Extract Keywords",
+        "description": "Extract relevant keywords from URLs and content for social media content generation",
+        "operationId": "extractKeywords",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeywordExtractionRequest"
+              },
+              "examples": {
+                "url_extraction": {
+                  "summary": "Extract from URL",
+                  "value": {
+                    "inputs": [
+                      {
+                        "type": "url",
+                        "content": "https://techcrunch.com/2024/01/15/ai-breakthrough-autonomous-vehicles",
+                        "weight": 2.0
+                      }
+                    ],
+                    "task_id": "keyword_extraction_v1",
+                    "agent_id": "content_analyst_agent"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Keywords extracted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordExtractionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/website/analyze": {
+      "post": {
+        "tags": ["Website Analysis"],
+        "summary": "Analyze Website",
+        "description": "Extract comprehensive information from websites including company details, brand identity, and content",
+        "operationId": "analyzeWebsite",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebsiteAnalysisRequest"
+              },
+              "examples": {
+                "basic_analysis": {
+                  "summary": "Basic Website Analysis",
+                  "value": {
+                    "url": "https://www.openai.com",
+                    "include_logo": true,
+                    "include_colors": true,
+                    "include_brand": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Website analysis completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebsiteAnalysisResponse"
+                }
+              }
+            }
           }
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
+    "securitySchemes": {
+      "sessionAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Session-ID",
+        "description": "Session-based authentication using session ID"
       }
     },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+    "schemas": {
+      "PipelineRequest": {
+        "type": "object",
+        "required": ["social_post_number", "user_info", "schedule_start_date", "schedule_end_date"],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": ["Autopilot", "Manual"],
+            "default": "Autopilot",
+            "description": "Generation mode"
+          },
+          "social_post_number": {
+            "type": "object",
+            "properties": {
+              "facebook": {"type": "integer", "minimum": 1, "maximum": 10},
+              "instagram": {"type": "integer", "minimum": 1, "maximum": 10},
+              "twitter": {"type": "integer", "minimum": 1, "maximum": 10},
+              "linkedin": {"type": "integer", "minimum": 1, "maximum": 10}
+            }
+          },
+          "user_info": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {"type": "string", "enum": ["url", "topic", "text", "keyword"]},
+                "content": {"type": "string"},
+                "weight": {"type": "number", "minimum": 0.1, "maximum": 3.0}
+              }
+            }
+          },
+          "schedule_start_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start date for post scheduling in ISO 8601 format"
+          },
+          "schedule_end_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End date for post scheduling in ISO 8601 format"
+          },
+          "country": {"type": "string", "description": "Target country for localization"},
+          "language": {"type": "string", "description": "Target language for content generation"},
+          "session_id": {"type": "string"},
+          "track_id": {"type": "string"},
+          "user_id": {"type": "string"}
+        }
+      },
+      "PipelineResponse": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "result_id": {"type": "string"},
+          "status": {"type": "string", "enum": ["processing", "completed", "failed"]},
+          "posts": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/Post"}
+          },
+          "execution_time": {"type": "number"},
+          "completed_at": {"type": "string", "format": "date-time"},
+          "created_at": {"type": "string", "format": "date-time"},
+          "error": {"type": "string"}
+        }
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "platform": {"type": "string", "enum": ["facebook", "instagram", "twitter", "linkedin"]},
+          "content": {"type": "string"},
+          "image_url": {"type": "string"},
+          "image_prompt": {"type": "string"},
+          "scheduled_time": {"type": "string", "format": "date-time"},
+          "hashtags": {"type": "array", "items": {"type": "string"}},
+          "engagement_score": {"type": "number"}
+        }
+      },
+      "GetResultResponse": {
+        "allOf": [{"$ref": "#/components/schemas/PipelineResponse"}]
+      },
+      "ChatbotRequest": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "object",
+            "required": ["content"],
+            "properties": {
+              "content": {"type": "string"},
+              "type": {"type": "string", "enum": ["text", "image", "url", "quote"], "default": "text"},
+              "metadata": {"type": "object"}
+            }
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["prompt2post", "image2post", "url2post", "quote2post", "chat2post", "chat"],
+            "default": "chat"
+          },
+          "thread_id": {"type": "string"},
+          "user_background": {
+            "type": "object",
+            "properties": {
+              "industry": {"type": "string"},
+              "tone": {"type": "string", "enum": ["professional", "casual", "friendly", "authoritative"]},
+              "target_audience": {"type": "string"},
+              "brand_voice": {"type": "string"},
+              "platforms": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "is_dummy_mode": {"type": "boolean", "default": false},
+          "session_id": {"type": "string"}
+        }
+      },
+      "ChatbotResponse": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "thread_id": {"type": "string"},
+          "type": {"type": "string", "enum": ["message", "post_generation", "error"]},
+          "role": {"type": "string", "enum": ["assistant", "system"]},
+          "status": {"type": "string", "enum": ["success", "failed", "processing"]},
+          "model": {"type": "string"},
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {"type": "string"},
+                "text": {"type": "string"},
+                "image_url": {"type": "string"},
+                "post_data": {"type": "object"}
+              }
+            }
+          },
+          "suggestions": {"type": "array", "items": {"type": "string"}},
+          "processing_time": {"type": "number"},
+          "usage": {
+            "type": "object",
+            "properties": {
+              "input_tokens": {"type": "integer"},
+              "output_tokens": {"type": "integer"},
+              "total_tokens": {"type": "integer"}
+            }
+          },
+          "stop_reason": {"type": "string"},
+          "error": {"type": "string"}
+        }
+      },
+      "KeywordExtractionRequest": {
+        "type": "object",
+        "required": ["inputs", "task_id", "agent_id"],
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "content"],
+              "properties": {
+                "type": {"type": "string", "enum": ["url", "text", "topic"]},
+                "content": {"type": "string"},
+                "weight": {"type": "number", "default": 1.0},
+                "metadata": {"type": "object"}
+              }
+            }
+          },
+          "task_id": {"type": "string"},
+          "agent_id": {"type": "string"},
+          "session_id": {"type": "string"},
+          "track_id": {"type": "string"}
+        }
+      },
+      "KeywordExtractionResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {"type": "string"},
+          "agent_id": {"type": "string"},
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "keyword": {"type": "string"},
+                "score": {"type": "number"},
+                "category": {"type": "string", "enum": ["topic", "entity", "concept", "hashtag"]},
+                "context": {"type": "string"}
+              }
+            }
+          },
+          "token_usage": {
+            "type": "object",
+            "properties": {
+              "input_tokens": {"type": "integer"},
+              "output_tokens": {"type": "integer"},
+              "total_tokens": {"type": "integer"}
+            }
+          },
+          "status": {"type": "string", "enum": ["success", "failed"]},
+          "error": {"type": "string"}
+        }
+      },
+      "WebsiteAnalysisRequest": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": {"type": "string", "format": "uri"},
+          "include_logo": {"type": "boolean", "default": true},
+          "include_colors": {"type": "boolean", "default": true},
+          "include_brand": {"type": "boolean", "default": true},
+          "additional_fields": {
+            "type": "array",
+            "items": {"type": "string", "enum": ["social_links", "contact_info", "team_info", "product_info", "pricing_info", "blog_posts"]}
+          },
+          "session_id": {"type": "string"},
+          "track_id": {"type": "string"}
+        }
+      },
+      "WebsiteAnalysisResponse": {
+        "type": "object",
+        "properties": {
+          "analysis_id": {"type": "string"},
+          "url": {"type": "string"},
+          "status": {"type": "string", "enum": ["processing", "partial", "success", "failed"]},
+          "company_name": {"type": "string"},
+          "company_info": {"type": "string"},
+          "logo_url": {"type": "string"},
+          "brand_identity": {"type": "string"},
+          "brand_voice": {
+            "type": "object",
+            "properties": {
+              "tone": {"type": "string"},
+              "personality": {"type": "array", "items": {"type": "string"}},
+              "communication_style": {"type": "string"},
+              "target_audience": {"type": "string"},
+              "key_messages": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "color_palette": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "hex": {"type": "string"},
+                "rgb": {"type": "object"},
+                "name": {"type": "string"},
+                "prominence": {"type": "number"}
+              }
+            }
+          },
+          "website_content": {"type": "string"},
+          "additional_info": {"type": "object"},
+          "processing_time": {"type": "number"},
+          "created_at": {"type": "string", "format": "date-time"},
+          "error": {"type": "string"}
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "enum": ["failed"]},
+          "error": {"type": "string"},
+          "execution_time": {"type": "number"}
+        }
       }
     }
-  }
-}
+  },
+  "tags": [
+    {
+      "name": "Pipeline Operations",
+      "description": "Automated social media post generation and management"
+    },
+    {
+      "name": "Chatbot Integration",
+      "description": "Interactive AI chatbot for content generation and conversation"
+    },
+    {
+      "name": "Content Generation",
+      "description": "Content analysis and generation tools"
+    },
+    {
+      "name": "Website Analysis",
+      "description": "Website content extraction and brand analysis"
+    }
+  ]
+} 

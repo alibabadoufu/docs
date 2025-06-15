@@ -1,0 +1,538 @@
+---
+title: 'Extract Keywords'
+description: 'Extract relevant keywords from URLs and content for social media content generation'
+---
+
+## Overview
+
+The keyword extraction endpoint analyzes web content, URLs, or text to identify the most relevant keywords and phrases. This is typically the first step in the content generation pipeline, providing the foundation for idea generation and post creation.
+
+<Info>
+Keyword extraction uses advanced NLP techniques to identify not just individual words, but semantic concepts and contextual phrases that are most relevant for social media content.
+</Info>
+
+## Request
+
+<ParamField path="inputs" type="array" required>
+Array of input sources to extract keywords from
+
+<Expandable title="Input Source Structure">
+<ParamField path="type" type="string" required>
+Type of input: `url`, `text`, `topic`
+</ParamField>
+
+<ParamField path="content" type="string" required>
+The content to analyze (URL, text content, or topic description)
+</ParamField>
+
+<ParamField path="weight" type="number" default="1.0">
+Importance weight for this input source (0.1-3.0)
+</ParamField>
+
+<ParamField path="metadata" type="object">
+Additional metadata about the input source
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField path="task_id" type="string" required>
+The ID of the keyword extraction task configuration to use
+</ParamField>
+
+<ParamField path="agent_id" type="string" required>
+The ID of the agent responsible for keyword extraction
+</ParamField>
+
+<ParamField path="session_id" type="string">
+Session identifier for request tracking
+</ParamField>
+
+<ParamField path="track_id" type="string">
+Tracking identifier for analytics
+</ParamField>
+
+## Response
+
+<ResponseField name="task_id" type="string">
+The task ID used for extraction
+</ResponseField>
+
+<ResponseField name="agent_id" type="string">
+The agent ID that performed the extraction
+</ResponseField>
+
+<ResponseField name="keywords" type="array">
+Array of extracted keywords and phrases, ordered by relevance
+
+<Expandable title="Keyword Object">
+<ResponseField name="keyword" type="string">
+The extracted keyword or phrase
+</ResponseField>
+
+<ResponseField name="score" type="number">
+Relevance score (0-100)
+</ResponseField>
+
+<ResponseField name="category" type="string">
+Keyword category: `topic`, `entity`, `concept`, `hashtag`
+</ResponseField>
+
+<ResponseField name="context" type="string">
+Context where the keyword was found
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+<ResponseField name="token_usage" type="object">
+Token consumption statistics
+
+<Expandable title="Token Usage">
+<ResponseField name="input_tokens" type="integer">
+Number of input tokens processed
+</ResponseField>
+
+<ResponseField name="output_tokens" type="integer">
+Number of output tokens generated
+</ResponseField>
+
+<ResponseField name="total_tokens" type="integer">
+Total token count
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Extraction status: `success`, `failed`
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if extraction failed
+</ResponseField>
+
+## Examples
+
+### Extract Keywords from URL
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/content/extract-keywords' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_123' \
+  -d '{
+    "inputs": [
+      {
+        "type": "url",
+        "content": "https://techcrunch.com/2024/01/15/ai-breakthrough-autonomous-vehicles",
+        "weight": 2.0
+      }
+    ],
+    "task_id": "keyword_extraction_v1",
+    "agent_id": "content_analyst_agent",
+    "session_id": "session_123"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "task_id": "keyword_extraction_v1",
+  "agent_id": "content_analyst_agent",
+  "keywords": [
+    {
+      "keyword": "artificial intelligence",
+      "score": 95.8,
+      "category": "topic",
+      "context": "AI breakthrough in autonomous vehicle technology"
+    },
+    {
+      "keyword": "autonomous vehicles",
+      "score": 92.4,
+      "category": "topic",
+      "context": "Self-driving car technology advancement"
+    },
+    {
+      "keyword": "machine learning",
+      "score": 87.3,
+      "category": "concept",
+      "context": "ML algorithms for vehicle navigation"
+    },
+    {
+      "keyword": "Tesla",
+      "score": 84.1,
+      "category": "entity",
+      "context": "Tesla's role in autonomous driving development"
+    },
+    {
+      "keyword": "safety technology",
+      "score": 79.6,
+      "category": "concept",
+      "context": "Enhanced safety features in self-driving cars"
+    },
+    {
+      "keyword": "automotive industry",
+      "score": 76.2,
+      "category": "topic",
+      "context": "Impact on traditional automotive manufacturing"
+    },
+    {
+      "keyword": "#AIVehicles",
+      "score": 71.8,
+      "category": "hashtag",
+      "context": "Social media hashtag for AI vehicle content"
+    },
+    {
+      "keyword": "#AutonomousDriving",
+      "score": 68.9,
+      "category": "hashtag",
+      "context": "Popular hashtag for self-driving car discussions"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1247,
+    "output_tokens": 156,
+    "total_tokens": 1403
+  },
+  "status": "success"
+}
+```
+</ResponseExample>
+
+### Extract Keywords from Multiple Sources
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/content/extract-keywords' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_456' \
+  -d '{
+    "inputs": [
+      {
+        "type": "url",
+        "content": "https://blog.example.com/remote-work-productivity-2024",
+        "weight": 1.5
+      },
+      {
+        "type": "text",
+        "content": "The future of remote work includes hybrid models, digital collaboration tools, and work-life balance initiatives that boost employee satisfaction and productivity.",
+        "weight": 1.2
+      },
+      {
+        "type": "topic",
+        "content": "workplace flexibility trends",
+        "weight": 1.0
+      }
+    ],
+    "task_id": "keyword_extraction_v1",
+    "agent_id": "content_analyst_agent"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Multiple Sources Response
+{
+  "task_id": "keyword_extraction_v1",
+  "agent_id": "content_analyst_agent",
+  "keywords": [
+    {
+      "keyword": "remote work",
+      "score": 98.5,
+      "category": "topic",
+      "context": "Primary theme across all input sources"
+    },
+    {
+      "keyword": "workplace flexibility",
+      "score": 91.2,
+      "category": "concept",
+      "context": "Key trend in modern work arrangements"
+    },
+    {
+      "keyword": "productivity",
+      "score": 88.7,
+      "category": "concept",
+      "context": "Measurement of remote work effectiveness"
+    },
+    {
+      "keyword": "hybrid work model",
+      "score": 85.3,
+      "category": "concept",
+      "context": "Combination of remote and office work"
+    },
+    {
+      "keyword": "digital collaboration",
+      "score": 82.1,
+      "category": "concept",
+      "context": "Tools and methods for remote teamwork"
+    },
+    {
+      "keyword": "work-life balance",
+      "score": 79.8,
+      "category": "concept",
+      "context": "Employee wellbeing in remote work"
+    },
+    {
+      "keyword": "employee satisfaction",
+      "score": 76.4,
+      "category": "concept",
+      "context": "Benefit of flexible work arrangements"
+    },
+    {
+      "keyword": "#RemoteWork",
+      "score": 74.2,
+      "category": "hashtag",
+      "context": "Popular social media hashtag"
+    },
+    {
+      "keyword": "#WorkFromHome",
+      "score": 71.9,
+      "category": "hashtag",
+      "context": "Alternative hashtag for remote work"
+    },
+    {
+      "keyword": "#FutureOfWork",
+      "score": 69.5,
+      "category": "hashtag",
+      "context": "Trend-focused hashtag"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 892,
+    "output_tokens": 187,
+    "total_tokens": 1079
+  },
+  "status": "success"
+}
+```
+</ResponseExample>
+
+### Failed Extraction
+
+<ResponseExample>
+```json Error Response
+{
+  "task_id": "keyword_extraction_v1",
+  "agent_id": "content_analyst_agent",
+  "keywords": null,
+  "token_usage": {
+    "input_tokens": 45,
+    "output_tokens": 0,
+    "total_tokens": 45
+  },
+  "status": "failed",
+  "error": "Unable to access URL: Connection timeout after 30 seconds. Please verify the URL is accessible and try again."
+}
+```
+</ResponseExample>
+
+## Keyword Categories
+
+<AccordionGroup>
+<Accordion title="topic">
+Main subject matters and themes that are central to the content
+</Accordion>
+
+<Accordion title="entity">
+Specific people, companies, products, or named entities mentioned in the content
+</Accordion>
+
+<Accordion title="concept">
+Abstract ideas, methods, or concepts that are important to the subject matter
+</Accordion>
+
+<Accordion title="hashtag">
+Recommended hashtags for social media use, derived from the content analysis
+</Accordion>
+</AccordionGroup>
+
+## Scoring System
+
+<Info>
+Keywords are scored on a scale of 0-100 based on:
+- **Frequency**: How often the keyword appears
+- **Context**: How central it is to the main content
+- **Semantic Importance**: How significant it is to the overall meaning
+- **Social Media Relevance**: How likely it is to perform well on social platforms
+</Info>
+
+## Best Practices
+
+<Steps>
+<Step title="Use Multiple Input Sources">
+Combine URLs, text, and topics for more comprehensive keyword extraction.
+
+<Tip>
+Using multiple sources with different weights helps create a more nuanced keyword profile.
+</Tip>
+</Step>
+
+<Step title="Weight Your Sources Appropriately">
+Assign higher weights to more important or authoritative sources.
+
+<Check>
+Primary sources should have weight 1.5-2.0, supporting sources 0.8-1.2.
+</Check>
+</Step>
+
+<Step title="Choose Relevant Task and Agent IDs">
+Use task and agent configurations that match your content domain.
+
+<Note>
+Different agents may specialize in different industries or content types.
+</Note>
+</Step>
+
+<Step title="Filter by Score and Category">
+Focus on high-scoring keywords (80+) for primary topics, medium scores (60-79) for supporting concepts.
+
+```python
+# Filter high-value keywords
+primary_keywords = [k for k in keywords if k['score'] >= 80]
+hashtag_keywords = [k for k in keywords if k['category'] == 'hashtag']
+```
+</Step>
+</Steps>
+
+## Error Handling
+
+### Common Errors
+
+<AccordionGroup>
+<Accordion title="URL Access Failure">
+```json
+{
+  "status": "failed",
+  "error": "Unable to access URL: HTTP 404 Not Found"
+}
+```
+
+**Solution**: Verify the URL is correct and publicly accessible.
+</Accordion>
+
+<Accordion title="Content Too Short">
+```json
+{
+  "status": "failed",
+  "error": "Insufficient content for keyword extraction. Minimum 50 words required."
+}
+```
+
+**Solution**: Provide more substantial content or combine multiple short inputs.
+</Accordion>
+
+<Accordion title="Invalid Task/Agent">
+```json
+{
+  "status": "failed",
+  "error": "Task ID 'invalid_task' not found"
+}
+```
+
+**Solution**: Use valid task and agent IDs from your configuration.
+</Accordion>
+</AccordionGroup>
+
+## Integration Examples
+
+<CodeGroup>
+```python Python
+import requests
+
+def extract_keywords(urls, session_id):
+    """Extract keywords from multiple URLs"""
+    
+    inputs = []
+    for i, url in enumerate(urls):
+        inputs.append({
+            "type": "url",
+            "content": url,
+            "weight": 2.0 if i == 0 else 1.0  # First URL gets higher weight
+        })
+    
+    response = requests.post(
+        'https://api.postreach.ai/content/extract-keywords',
+        headers={'X-Session-ID': session_id},
+        json={
+            "inputs": inputs,
+            "task_id": "keyword_extraction_v1",
+            "agent_id": "content_analyst_agent"
+        }
+    )
+    
+    if response.status_code == 200:
+        result = response.json()
+        if result['status'] == 'success':
+            # Return top keywords with score > 75
+            return [k for k in result['keywords'] if k['score'] > 75]
+    
+    return []
+
+# Usage
+keywords = extract_keywords([
+    "https://techcrunch.com/ai-article",
+    "https://venturebeat.com/machine-learning"
+], "session_123")
+```
+
+```javascript JavaScript
+async function extractKeywords(inputs, sessionId) {
+  const response = await fetch('https://api.postreach.ai/content/extract-keywords', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Session-ID': sessionId
+    },
+    body: JSON.stringify({
+      inputs: inputs.map((content, index) => ({
+        type: 'url',
+        content: content,
+        weight: index === 0 ? 2.0 : 1.0
+      })),
+      task_id: 'keyword_extraction_v1',
+      agent_id: 'content_analyst_agent'
+    })
+  });
+  
+  const result = await response.json();
+  
+  if (result.status === 'success') {
+    // Group keywords by category
+    const grouped = result.keywords.reduce((acc, keyword) => {
+      if (!acc[keyword.category]) acc[keyword.category] = [];
+      acc[keyword.category].push(keyword);
+      return acc;
+    }, {});
+    
+    return grouped;
+  }
+  
+  throw new Error(result.error || 'Keyword extraction failed');
+}
+
+// Usage
+const keywords = await extractKeywords([
+  'https://example.com/article-1',
+  'https://example.com/article-2'
+], 'session_123');
+```
+</CodeGroup>
+
+## Related Endpoints
+
+<CardGroup cols={2}>
+<Card title="Generate Ideas" icon="lightbulb" href="/api-reference/content/generate-ideas">
+  Use extracted keywords to generate content ideas
+</Card>
+
+<Card title="Generate Posts" icon="pen-nib" href="/api-reference/pipeline/generate-posts">
+  Create complete social media posts using keywords
+</Card>
+
+<Card title="Website Analysis" icon="globe" href="/api-reference/website/analyze">
+  Comprehensive website analysis including keywords
+</Card>
+
+<Card title="Agents" icon="robot" href="/api-reference/agents/list">
+  Manage agents used for keyword extraction
+</Card>
+</CardGroup> 

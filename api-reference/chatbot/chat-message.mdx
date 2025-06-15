@@ -1,0 +1,535 @@
+---
+title: 'Process Chat Message'
+description: 'Send messages to the AI chatbot for interactive content generation and conversation'
+---
+
+## Overview
+
+The chatbot endpoint provides an interactive AI interface for content generation, social media post creation, and general conversation. It supports multiple modes for different types of content creation workflows.
+
+<Info>
+The chatbot supports both single-response and streaming modes. For real-time applications, use the streaming endpoint for better user experience.
+</Info>
+
+## Supported Modes
+
+<Tabs>
+<Tab title="prompt2post">
+Generate social media posts from text prompts
+</Tab>
+
+<Tab title="image2post">
+Create posts based on uploaded images
+</Tab>
+
+<Tab title="url2post">
+Generate content from webpage URLs
+</Tab>
+
+<Tab title="quote2post">
+Transform quotes into engaging social media posts
+</Tab>
+
+<Tab title="chat2post">
+Interactive chat-based post generation
+</Tab>
+
+<Tab title="chat">
+General purpose conversation mode
+</Tab>
+</Tabs>
+
+## Request
+
+<ParamField path="message" type="object" required>
+The user's message to process
+
+<Expandable title="Message Structure">
+<ParamField path="content" type="string" required>
+The text content of the message
+</ParamField>
+
+<ParamField path="type" type="string" default="text">
+Message type: `text`, `image`, `url`, `quote`
+</ParamField>
+
+<ParamField path="metadata" type="object">
+Additional metadata for the message (platform preferences, style guides, etc.)
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField path="mode" type="string" default="chat">
+Processing mode: `prompt2post`, `image2post`, `url2post`, `quote2post`, `chat2post`, `chat`
+</ParamField>
+
+<ParamField path="thread_id" type="string">
+ID of the conversation thread for context continuity
+</ParamField>
+
+<ParamField path="user_background" type="object">
+User's background information and preferences
+
+<Expandable title="User Background Fields">
+<ParamField path="industry" type="string">
+User's industry or business sector
+</ParamField>
+
+<ParamField path="tone" type="string">
+Preferred communication tone: `professional`, `casual`, `friendly`, `authoritative`
+</ParamField>
+
+<ParamField path="target_audience" type="string">
+Description of the target audience
+</ParamField>
+
+<ParamField path="brand_voice" type="string">
+Brand voice characteristics and guidelines
+</ParamField>
+
+<ParamField path="platforms" type="array">
+Preferred social media platforms
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField path="preview_posts" type="array">
+Existing posts for context or comparison
+
+<Expandable title="Post Preview Structure">
+<ParamField path="platform" type="string">
+Platform where the post will be shared
+</ParamField>
+
+<ParamField path="content" type="string">
+Post content/caption
+</ParamField>
+
+<ParamField path="image_url" type="string">
+URL to the post image
+</ParamField>
+
+<ParamField path="engagement_data" type="object">
+Historical engagement metrics
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField path="is_dummy_mode" type="boolean" default="false">
+Enable dummy mode for testing and development
+</ParamField>
+
+<ParamField path="session_id" type="string">
+Session identifier for request tracking
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="string">
+Unique identifier for the chatbot response
+</ResponseField>
+
+<ResponseField name="thread_id" type="string">
+ID of the message thread
+</ResponseField>
+
+<ResponseField name="type" type="string">
+Response type: `message`, `post_generation`, `error`
+</ResponseField>
+
+<ResponseField name="role" type="string">
+Response role: `assistant`, `system`
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Response status: `success`, `failed`, `processing`
+</ResponseField>
+
+<ResponseField name="model" type="string">
+AI model used for processing
+</ResponseField>
+
+<ResponseField name="content" type="array">
+Response content blocks
+
+<Expandable title="Content Block Types">
+<ResponseField name="type" type="string">
+Content type: `text`, `image`, `post`, `suggestions`
+</ResponseField>
+
+<ResponseField name="text" type="string">
+Text content (for text blocks)
+</ResponseField>
+
+<ResponseField name="image_url" type="string">
+Image URL (for image blocks)
+</ResponseField>
+
+<ResponseField name="post_data" type="object">
+Generated post data (for post blocks)
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+<ResponseField name="suggestions" type="array">
+Follow-up suggestions or actions
+</ResponseField>
+
+<ResponseField name="processing_time" type="number">
+Time taken to process the request in seconds
+</ResponseField>
+
+<ResponseField name="usage" type="object">
+Token usage statistics
+
+<Expandable title="Usage Statistics">
+<ResponseField name="input_tokens" type="integer">
+Number of input tokens processed
+</ResponseField>
+
+<ResponseField name="output_tokens" type="integer">
+Number of output tokens generated
+</ResponseField>
+
+<ResponseField name="total_tokens" type="integer">
+Total token count
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+<ResponseField name="stop_reason" type="string">
+Reason the response ended: `end_turn`, `max_tokens`, `stop_sequence`
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if processing failed
+</ResponseField>
+
+## Examples
+
+### Basic Chat Interaction
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/chatbot/message' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_123' \
+  -d '{
+    "message": {
+      "content": "Help me create a LinkedIn post about the benefits of remote work",
+      "type": "text"
+    },
+    "mode": "prompt2post",
+    "user_background": {
+      "industry": "Technology",
+      "tone": "professional",
+      "target_audience": "Software developers and tech professionals",
+      "platforms": ["linkedin"]
+    }
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "id": "chat_response_789",
+  "thread_id": "thread_456",
+  "type": "post_generation",
+  "role": "assistant",
+  "status": "success",
+  "model": "claude-3-sonnet",
+  "content": [
+    {
+      "type": "text",
+      "text": "I've created a professional LinkedIn post about remote work benefits tailored for tech professionals:"
+    },
+    {
+      "type": "post",
+      "post_data": {
+        "platform": "linkedin",
+        "content": "🏠 Remote work has transformed the tech industry in remarkable ways.\n\nKey benefits I've observed:\n\n✅ Increased productivity with fewer office distractions\n✅ Better work-life balance leading to reduced burnout\n✅ Access to global talent pools for companies\n✅ Reduced commute time = more time for skill development\n✅ Cost savings for both employees and employers\n\nThe data speaks for itself: 83% of developers report higher job satisfaction when working remotely.\n\nWhat's been your biggest win with remote work? Share your experience below! 👇\n\n#RemoteWork #TechCareers #WorkLifeBalance #SoftwareDevelopment",
+        "hashtags": ["#RemoteWork", "#TechCareers", "#WorkLifeBalance", "#SoftwareDevelopment"],
+        "engagement_prediction": 89.5
+      }
+    }
+  ],
+  "suggestions": [
+    "Would you like me to create versions for other platforms?",
+    "I can generate an accompanying image for this post",
+    "Should we schedule this post for optimal engagement timing?"
+  ],
+  "processing_time": 3.24,
+  "usage": {
+    "input_tokens": 157,
+    "output_tokens": 312,
+    "total_tokens": 469
+  },
+  "stop_reason": "end_turn"
+}
+```
+</ResponseExample>
+
+### URL to Post Generation
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/chatbot/message' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_456' \
+  -d '{
+    "message": {
+      "content": "https://techcrunch.com/2024/01/15/ai-startup-funding-record",
+      "type": "url"
+    },
+    "mode": "url2post",
+    "user_background": {
+      "industry": "Venture Capital",
+      "tone": "authoritative",
+      "target_audience": "Investors and entrepreneurs",
+      "platforms": ["twitter", "linkedin"]
+    },
+    "thread_id": "thread_789"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json URL Processing Response
+{
+  "id": "chat_response_890",
+  "thread_id": "thread_789",
+  "type": "post_generation",
+  "role": "assistant",
+  "status": "success",
+  "model": "claude-3-sonnet",
+  "content": [
+    {
+      "type": "text",
+      "text": "I've analyzed the TechCrunch article about AI startup funding and created posts for both Twitter and LinkedIn:"
+    },
+    {
+      "type": "post",
+      "post_data": {
+        "platform": "twitter",
+        "content": "🚀 AI startup funding just hit a new record!\n\nKey insights from the latest data:\n• $2.3B invested in Q4 2024\n• 47% increase from previous quarter\n• Generative AI leading the charge\n\nThe AI revolution is well-funded and accelerating 📈\n\nWhat sectors do you think will see the biggest AI disruption next?\n\n#AIFunding #VentureCapital #StartupNews",
+        "hashtags": ["#AIFunding", "#VentureCapital", "#StartupNews"],
+        "engagement_prediction": 92.3
+      }
+    },
+    {
+      "type": "post",
+      "post_data": {
+        "platform": "linkedin",
+        "content": "The AI funding landscape continues to break records, with $2.3B invested in Q4 2024 alone - a 47% quarter-over-quarter increase.\n\nWhat's driving this unprecedented growth?\n\n🔹 Generative AI applications showing real ROI\n🔹 Enterprise adoption accelerating across industries\n🔹 Infrastructure needs creating new opportunities\n🔹 Talent acquisition wars driving valuations\n\nAs investors, we're seeing a clear shift from experimental to production-ready AI solutions. The companies succeeding aren't just building cool tech - they're solving real business problems with measurable impact.\n\nThe question isn't whether AI will transform industries, but how quickly and which startups will lead that transformation.\n\nWhat AI applications are you most excited about in 2024?\n\n#ArtificialIntelligence #VentureCapital #StartupInvesting #TechTrends",
+        "hashtags": ["#ArtificialIntelligence", "#VentureCapital", "#StartupInvesting", "#TechTrends"],
+        "engagement_prediction": 87.8
+      }
+    }
+  ],
+  "suggestions": [
+    "Generate an infographic to accompany these posts",
+    "Create a follow-up post series about AI investment trends",
+    "Schedule these posts for maximum reach"
+  ],
+  "processing_time": 8.76,
+  "usage": {
+    "input_tokens": 1243,
+    "output_tokens": 567,
+    "total_tokens": 1810
+  },
+  "stop_reason": "end_turn"
+}
+```
+</ResponseExample>
+
+### Conversation with Context
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/chatbot/message' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_789' \
+  -d '{
+    "message": {
+      "content": "Can you make the LinkedIn post more data-driven and add specific statistics?",
+      "type": "text"
+    },
+    "mode": "chat",
+    "thread_id": "thread_789"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Context-Aware Response
+{
+  "id": "chat_response_891",
+  "thread_id": "thread_789",
+  "type": "message",
+  "role": "assistant",
+  "status": "success",
+  "content": [
+    {
+      "type": "text",
+      "text": "Absolutely! Here's the LinkedIn post enhanced with specific data points and statistics:"
+    },
+    {
+      "type": "post",
+      "post_data": {
+        "platform": "linkedin",
+        "content": "AI funding just shattered records: $2.3B invested in Q4 2024 📊\n\nThe numbers tell a compelling story:\n\n📈 47% QoQ growth (vs 23% average for tech overall)\n💰 Average deal size: $12.4M (up 31% from Q3)\n🎯 74% of deals focused on generative AI applications\n⚡ Enterprise adoption up 156% year-over-year\n🏢 83% of Fortune 500 companies now have AI pilot programs\n\nMost telling statistic: AI startups are achieving profitability 2.3x faster than the previous generation of tech companies.\n\nBreakdown by sector:\n• Healthcare AI: $680M (29.6%)\n• Developer tools: $520M (22.6%)\n• Sales & marketing: $410M (17.8%)\n• Cybersecurity: $390M (17.0%)\n• Other: $300M (13.0%)\n\nWe're witnessing the maturation of AI from experimental technology to business-critical infrastructure. The startups raising these rounds aren't just building features - they're creating new market categories.\n\nSource: TechCrunch Analysis, Q4 2024 Funding Report\n\nWhich AI sector do you predict will dominate 2025 funding rounds?\n\n#AIFunding #VentureCapital #StartupData #TechTrends #GenerativeAI",
+        "engagement_prediction": 94.2
+      }
+    }
+  ],
+  "suggestions": [
+    "Create a visual chart showing the sector breakdown",
+    "Write a follow-up post about AI profitability metrics",
+    "Compare these numbers to previous AI funding cycles"
+  ],
+  "processing_time": 4.12,
+  "usage": {
+    "input_tokens": 89,
+    "output_tokens": 423,
+    "total_tokens": 512
+  },
+  "stop_reason": "end_turn"
+}
+```
+</ResponseExample>
+
+## Streaming Response
+
+For real-time applications, use the streaming endpoint to receive responses as they're generated.
+
+<RequestExample>
+```bash cURL Streaming
+curl -X POST 'https://api.postreach.ai/chatbot/message/stream' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_123' \
+  -H 'Accept: text/event-stream' \
+  -d '{
+    "message": {
+      "content": "Create a Twitter thread about sustainable technology trends",
+      "type": "text"
+    },
+    "mode": "chat2post"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Streaming Response
+data: {"event": "start", "data": {"thread_id": "thread_abc123"}}
+
+data: {"event": "content", "data": {"type": "text", "content": "I'll create a Twitter thread about sustainable technology trends. Here's the thread:"}}
+
+data: {"event": "content", "data": {"type": "post", "content": "🌱 THREAD: Sustainable tech trends reshaping our future\n\n1/7 The intersection of technology and sustainability isn't just a trend—it's becoming the foundation of innovation in 2024."}}
+
+data: {"event": "content", "data": {"type": "post", "content": "2/7 🔋 Energy Storage Revolution\n• Solid-state batteries achieving 2x energy density\n• Grid-scale storage costs down 70% since 2020\n• Breakthrough: 15-minute charging for EVs"}}
+
+data: {"event": "done", "data": {"usage": {"total_tokens": 456}, "processing_time": 12.3}}
+```
+</ResponseExample>
+
+## Error Handling
+
+<Warning>
+The chatbot can fail due to content policy violations, rate limiting, or processing errors. Always implement proper error handling.
+</Warning>
+
+### Common Error Scenarios
+
+<AccordionGroup>
+<Accordion title="Content Policy Violation">
+```json
+{
+  "status": "failed",
+  "error": "Content policy violation: The requested content contains inappropriate material that cannot be processed.",
+  "error_code": "CONTENT_POLICY_VIOLATION"
+}
+```
+</Accordion>
+
+<Accordion title="Rate Limit Exceeded">
+```json
+{
+  "status": "failed",
+  "error": "Rate limit exceeded. Please wait 60 seconds before making another request.",
+  "error_code": "RATE_LIMIT_EXCEEDED",
+  "retry_after": 60
+}
+```
+</Accordion>
+
+<Accordion title="Invalid Mode">
+```json
+{
+  "status": "failed",
+  "error": "Invalid mode: 'invalid_mode'. Supported modes: prompt2post, image2post, url2post, quote2post, chat2post, chat",
+  "error_code": "INVALID_MODE"
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Steps>
+<Step title="Use Thread IDs for Context">
+Always include `thread_id` for multi-turn conversations to maintain context.
+
+<Check>
+Store thread IDs in your application to enable conversation continuity.
+</Check>
+</Step>
+
+<Step title="Provide Rich User Background">
+Include detailed user background information for more personalized responses.
+
+<Tip>
+The more context you provide about industry, audience, and tone preferences, the better the generated content will be.
+</Tip>
+</Step>
+
+<Step title="Handle Streaming Responses">
+For better user experience, implement streaming response handling for real-time feedback.
+
+```javascript
+const eventSource = new EventSource('/chatbot/message/stream');
+eventSource.onmessage = function(event) {
+  const data = JSON.parse(event.data);
+  // Handle streaming content
+};
+```
+</Step>
+
+<Step title="Implement Retry Logic">
+Add exponential backoff for rate-limited requests and temporary failures.
+
+<Note>
+Most temporary failures resolve within 10-30 seconds.
+</Note>
+</Step>
+</Steps>
+
+## Related Endpoints
+
+<CardGroup cols={2}>
+<Card title="Stream Messages" icon="stream" href="/api-reference/chatbot/stream-message">
+  Real-time streaming chat responses
+</Card>
+
+<Card title="Generate Posts" icon="pen-nib" href="/api-reference/pipeline/generate-posts">
+  Alternative pipeline-based post generation
+</Card>
+
+<Card title="Website Analysis" icon="globe" href="/api-reference/website/analyze">
+  Analyze websites for content extraction
+</Card>
+
+<Card title="Post Editing" icon="edit" href="/api-reference/posts/edit">
+  Edit and refine generated content
+</Card>
+</CardGroup> 

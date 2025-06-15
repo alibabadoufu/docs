@@ -1,107 +1,773 @@
 ---
-title: 'Development'
-description: 'Preview changes locally to update your docs'
+title: 'Development Guide'
+description: 'Best practices and development workflows for integrating Postreach AI into your applications'
 ---
 
+# Development Guide
+
+This guide covers development best practices, testing strategies, and integration patterns for building robust applications with the Postreach AI API.
+
 <Info>
-  **Prerequisite**: Please install Node.js (version 19 or higher) before proceeding. <br />
-  Please upgrade to ```docs.json``` before proceeding and delete the legacy ```mint.json``` file.
+This guide assumes you've completed the [Quick Start Guide](/quickstart) and have a working API integration.
 </Info>
 
-Follow these steps to install and run Mintlify on your operating system:
+## Development Environment Setup
 
-**Step 1**: Install Mintlify:
-
-<CodeGroup>
-
-  ```bash npm
-  npm i -g mintlify
-  ```
-
-```bash yarn
-yarn global add mintlify
-```
-
-</CodeGroup>
-
-**Step 2**: Navigate to the docs directory (where the `docs.json` file is located) and execute the following command:
-
-```bash
-mintlify dev
-```
-
-A local preview of your documentation will be available at `http://localhost:3000`.
-
-### Custom Ports
-
-By default, Mintlify uses port 3000. You can customize the port Mintlify runs on by using the `--port` flag. To run Mintlify on port 3333, for instance, use this command:
-
-```bash
-mintlify dev --port 3333
-```
-
-If you attempt to run Mintlify on a port that's already in use, it will use the next available port:
-
-```md
-Port 3000 is already in use. Trying 3001 instead.
-```
-
-## Mintlify Versions
-
-Please note that each CLI release is associated with a specific version of Mintlify. If your local website doesn't align with the production version, please update the CLI:
+<Steps>
+<Step title="Environment Configuration">
+Set up separate development and production environments with different session IDs and configurations.
 
 <CodeGroup>
+```python Python Environment
+import os
+from dataclasses import dataclass
 
-```bash npm
-npm i -g mintlify@latest
+@dataclass
+class PostreachConfig:
+    base_url: str
+    session_id: str
+    track_id: str
+    timeout: int = 30
+    retry_attempts: int = 3
+
+# Development environment
+DEV_CONFIG = PostreachConfig(
+    base_url="https://api.postreach.ai",
+    session_id=os.getenv("POSTREACH_DEV_SESSION_ID"),
+    track_id="dev",
+    timeout=60  # Longer timeout for development
+)
+
+# Production environment
+PROD_CONFIG = PostreachConfig(
+    base_url="https://api.postreach.ai",
+    session_id=os.getenv("POSTREACH_PROD_SESSION_ID"),
+    track_id="prod",
+    timeout=30
+)
 ```
 
-```bash yarn
-yarn global upgrade mintlify
-```
+```javascript JavaScript Environment
+const config = {
+  development: {
+    baseUrl: 'https://api.postreach.ai',
+    sessionId: process.env.POSTREACH_DEV_SESSION_ID,
+    trackId: 'dev',
+    timeout: 60000, // 60 seconds for development
+    retryAttempts: 3
+  },
+  production: {
+    baseUrl: 'https://api.postreach.ai',
+    sessionId: process.env.POSTREACH_PROD_SESSION_ID,
+    trackId: 'prod',
+    timeout: 30000, // 30 seconds for production
+    retryAttempts: 5
+  }
+};
 
+const getConfig = () => config[process.env.NODE_ENV || 'development'];
+```
 </CodeGroup>
+</Step>
 
-## Validating Links
+<Step title="SDK Implementation">
+Create a robust client wrapper with error handling and retry logic.
 
-The CLI can assist with validating reference links made in your documentation. To identify any broken links, use the following command:
+<Tabs>
+<Tab title="Python SDK">
+```python Postreach Client
+import requests
+import time
+import logging
+from typing import Dict, List, Optional, Union
+from dataclasses import dataclass
 
-```bash
-mintlify broken-links
+class PostreachClient:
+    def __init__(self, config: PostreachConfig):
+        self.config = config
+        self.session = requests.Session()
+        self.session.headers.update({
+            'Content-Type': 'application/json',
+            'X-Session-ID': config.session_id,
+            'X-Track-ID': config.track_id,
+            'User-Agent': 'PostreachAI-Python-Client/1.0'
+        })
+        
+    def _make_request(self, method: str, endpoint: str, **kwargs):
+        """Make HTTP request with retry logic"""
+        url = f"{self.config.base_url}/{endpoint.lstrip('/')}"
+        
+        for attempt in range(self.config.retry_attempts):
+            try:
+                response = self.session.request(
+                    method, url, timeout=self.config.timeout, **kwargs
+                )
+                
+                # Handle rate limiting
+                if response.status_code == 429:
+                    retry_after = int(response.headers.get('Retry-After', 60))
+                    logging.warning(f"Rate limited. Waiting {retry_after}s...")
+                    time.sleep(retry_after)
+                    continue
+                
+                response.raise_for_status()
+                return response.json()
+                
+            except requests.exceptions.RequestException as e:
+                if attempt == self.config.retry_attempts - 1:
+                    raise
+                
+                wait_time = 2 ** attempt  # Exponential backoff
+                logging.warning(f"Request failed, retrying in {wait_time}s: {e}")
+                time.sleep(wait_time)
+    
+    def generate_posts(self, **payload):
+        """Generate social media posts"""
+        return self._make_request('POST', '/pipeline/generate', json=payload)
+    
+    def get_results(self, result_id: str):
+        """Get pipeline results"""
+        return self._make_request('GET', f'/results/{result_id}')
+    
+    def chat_message(self, **payload):
+        """Send message to chatbot"""
+        return self._make_request('POST', '/chatbot/message', json=payload)
+    
+    def extract_keywords(self, **payload):
+        """Extract keywords from content"""
+        return self._make_request('POST', '/content/extract-keywords', json=payload)
+    
+    def analyze_website(self, **payload):
+        """Analyze website"""
+        return self._make_request('POST', '/website/analyze', json=payload)
+
+# Usage
+client = PostreachClient(DEV_CONFIG)
+result = client.generate_posts(
+    mode="Autopilot",
+    social_post_number={"linkedin": 1, "twitter": 2},
+    user_info=[{"type": "topic", "content": "AI trends 2024"}],
+    schedule_start_date="2024-01-20T09:00:00Z",
+    schedule_end_date="2024-01-27T18:00:00Z"
+)
 ```
+</Tab>
 
-## Deployment
+<Tab title="JavaScript SDK">
+```javascript Postreach Client
+class PostreachClient {
+  constructor(config) {
+    this.config = config;
+    this.defaultHeaders = {
+      'Content-Type': 'application/json',
+      'X-Session-ID': config.sessionId,
+      'X-Track-ID': config.trackId,
+      'User-Agent': 'PostreachAI-JS-Client/1.0'
+    };
+  }
 
-<Tip>
-  Unlimited editors available under the [Pro
-  Plan](https://mintlify.com/pricing) and above.
-</Tip>
+  async _makeRequest(method, endpoint, options = {}) {
+    const url = `${this.config.baseUrl}/${endpoint.replace(/^\//, '')}`;
+    
+    for (let attempt = 0; attempt < this.config.retryAttempts; attempt++) {
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { ...this.defaultHeaders, ...options.headers },
+          body: options.body ? JSON.stringify(options.body) : undefined,
+          signal: AbortSignal.timeout(this.config.timeout)
+        });
 
-If the deployment is successful, you should see the following:
+        // Handle rate limiting
+        if (response.status === 429) {
+          const retryAfter = parseInt(response.headers.get('Retry-After') || '60');
+          console.warn(`Rate limited. Waiting ${retryAfter}s...`);
+          await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+          continue;
+        }
 
-<Frame>
-  <img src="/images/checks-passed.png" style={{ borderRadius: '0.5rem' }} />
-</Frame>
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
-## Code Formatting
+        return await response.json();
+        
+      } catch (error) {
+        if (attempt === this.config.retryAttempts - 1) {
+          throw error;
+        }
+        
+        const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff
+        console.warn(`Request failed, retrying in ${waitTime}ms:`, error.message);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+  }
 
-We suggest using extensions on your IDE to recognize and format MDX. If you're a VSCode user, consider the [MDX VSCode extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) for syntax highlighting, and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for code formatting.
+  async generatePosts(payload) {
+    return this._makeRequest('POST', '/pipeline/generate', { body: payload });
+  }
 
-## Troubleshooting
+  async getResults(resultId) {
+    return this._makeRequest('GET', `/results/${resultId}`);
+  }
+
+  async chatMessage(payload) {
+    return this._makeRequest('POST', '/chatbot/message', { body: payload });
+  }
+
+  async extractKeywords(payload) {
+    return this._makeRequest('POST', '/content/extract-keywords', { body: payload });
+  }
+
+  async analyzeWebsite(payload) {
+    return this._makeRequest('POST', '/website/analyze', { body: payload });
+  }
+}
+
+// Usage
+const client = new PostreachClient(getConfig());
+const result = await client.generatePosts({
+  mode: 'Autopilot',
+  social_post_number: { linkedin: 1, twitter: 2 },
+  user_info: [{ type: 'topic', content: 'AI trends 2024' }],
+  schedule_start_date: '2024-01-20T09:00:00Z',
+  schedule_end_date: '2024-01-27T18:00:00Z'
+});
+```
+</Tab>
+</Tabs>
+</Step>
+
+<Step title="Testing Framework">
+Set up comprehensive testing for your integration.
+
+<Tabs>
+<Tab title="Python Testing">
+```python pytest Tests
+import pytest
+from unittest.mock import Mock, patch
+import json
+
+class TestPostreachClient:
+    @pytest.fixture
+    def client(self):
+        config = PostreachConfig(
+            base_url="https://api.postreach.ai",
+            session_id="test-session",
+            track_id="test"
+        )
+        return PostreachClient(config)
+    
+    @patch('requests.Session.request')
+    def test_generate_posts_success(self, mock_request, client):
+        # Mock successful response
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            'id': 'pipeline_123',
+            'result_id': 'result_456',
+            'status': 'completed'
+        }
+        mock_request.return_value = mock_response
+        
+        result = client.generate_posts(
+            mode="Autopilot",
+            social_post_number={"linkedin": 1},
+            user_info=[{"type": "topic", "content": "test"}],
+            schedule_start_date="2024-01-20T09:00:00Z",
+            schedule_end_date="2024-01-27T18:00:00Z"
+        )
+        
+        assert result['id'] == 'pipeline_123'
+        assert result['status'] == 'completed'
+    
+    @patch('requests.Session.request')
+    def test_rate_limit_retry(self, mock_request, client):
+        # Mock rate limit then success
+        rate_limit_response = Mock()
+        rate_limit_response.status_code = 429
+        rate_limit_response.headers = {'Retry-After': '1'}
+        
+        success_response = Mock()
+        success_response.status_code = 200
+        success_response.json.return_value = {'success': True}
+        
+        mock_request.side_effect = [rate_limit_response, success_response]
+        
+        result = client.get_results('test_id')
+        assert result['success'] is True
+        assert mock_request.call_count == 2
+
+# Integration tests
+@pytest.mark.integration
+class TestPostreachIntegration:
+    def test_full_pipeline(self, real_client):
+        # Test complete pipeline flow
+        result = real_client.generate_posts(
+            mode="Autopilot",
+            social_post_number={"linkedin": 1},
+            user_info=[{"type": "topic", "content": "test content"}],
+            schedule_start_date="2024-01-20T09:00:00Z",
+            schedule_end_date="2024-01-27T18:00:00Z"
+        )
+        
+        assert 'result_id' in result
+        
+        # Poll for completion
+        import time
+        for _ in range(10):  # Max 10 attempts
+            status = real_client.get_results(result['result_id'])
+            if status['status'] == 'completed':
+                assert len(status['posts']) > 0
+                break
+            time.sleep(2)
+```
+</Tab>
+
+<Tab title="JavaScript Testing">
+```javascript Jest Tests
+const { PostreachClient } = require('./postreach-client');
+
+describe('PostreachClient', () => {
+  let client;
+  
+  beforeEach(() => {
+    client = new PostreachClient({
+      baseUrl: 'https://api.postreach.ai',
+      sessionId: 'test-session',
+      trackId: 'test',
+      timeout: 5000,
+      retryAttempts: 3
+    });
+  });
+
+  describe('generatePosts', () => {
+    it('should generate posts successfully', async () => {
+      // Mock fetch
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          id: 'pipeline_123',
+          result_id: 'result_456',
+          status: 'completed'
+        })
+      });
+
+      const result = await client.generatePosts({
+        mode: 'Autopilot',
+        social_post_number: { linkedin: 1 },
+        user_info: [{ type: 'topic', content: 'test' }],
+        schedule_start_date: '2024-01-20T09:00:00Z',
+        schedule_end_date: '2024-01-27T18:00:00Z'
+      });
+
+      expect(result.id).toBe('pipeline_123');
+      expect(result.status).toBe('completed');
+    });
+
+    it('should handle rate limiting', async () => {
+      // Mock rate limit then success
+      global.fetch = jest.fn()
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 429,
+          headers: new Map([['Retry-After', '1']])
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ success: true })
+        });
+
+      const result = await client.getResults('test_id');
+      expect(result.success).toBe(true);
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+  });
+});
+
+// Integration tests
+describe('Postreach Integration', () => {
+  it('should complete full pipeline flow', async () => {
+    const client = new PostreachClient(realConfig);
+    
+    const result = await client.generatePosts({
+      mode: 'Autopilot',
+      social_post_number: { linkedin: 1 },
+      user_info: [{ type: 'topic', content: 'test content' }],
+      schedule_start_date: '2024-01-20T09:00:00Z',
+      schedule_end_date: '2024-01-27T18:00:00Z'
+    });
+
+    expect(result.result_id).toBeDefined();
+
+    // Poll for completion
+    for (let i = 0; i < 10; i++) {
+      const status = await client.getResults(result.result_id);
+      if (status.status === 'completed') {
+        expect(status.posts.length).toBeGreaterThan(0);
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  }, 30000); // 30 second timeout
+});
+```
+</Tab>
+</Tabs>
+</Step>
+</Steps>
+
+## Error Handling Strategies
 
 <AccordionGroup>
-  <Accordion title='Error: Could not load the "sharp" module using the darwin-arm64 runtime'>
+<Accordion title="Rate Limiting">
+Implement exponential backoff for rate-limited requests:
 
-    This may be due to an outdated version of node. Try the following:
-    1. Remove the currently-installed version of mintlify: `npm remove -g mintlify`
-    2. Upgrade to Node v19 or higher.
-    3. Reinstall mintlify: `npm install -g mintlify`
-  </Accordion>
+```python Python Rate Limiting
+import time
+import random
 
-  <Accordion title="Issue: Encountering an unknown error">
+def handle_rate_limit(response):
+    if response.status_code == 429:
+        retry_after = int(response.headers.get('Retry-After', 60))
+        jitter = random.uniform(0, 1)  # Add jitter to avoid thundering herd
+        sleep_time = retry_after + jitter
+        
+        logging.info(f"Rate limited. Sleeping for {sleep_time:.2f}s")
+        time.sleep(sleep_time)
+        return True
+    return False
+```
+
+```javascript JavaScript Rate Limiting
+async function handleRateLimit(response) {
+  if (response.status === 429) {
+    const retryAfter = parseInt(response.headers.get('Retry-After') || '60');
+    const jitter = Math.random(); // Add jitter
+    const sleepTime = (retryAfter + jitter) * 1000;
+    
+    console.log(`Rate limited. Sleeping for ${sleepTime}ms`);
+    await new Promise(resolve => setTimeout(resolve, sleepTime));
+    return true;
+  }
+  return false;
+}
+```
+</Accordion>
+
+<Accordion title="Async Processing">
+Handle long-running pipeline operations with polling:
+
+```python Python Async Polling
+async def wait_for_completion(client, result_id, max_wait=300, poll_interval=5):
+    """Wait for pipeline completion with timeout"""
+    start_time = time.time()
+    
+    while time.time() - start_time < max_wait:
+        try:
+            result = client.get_results(result_id)
+            
+            if result['status'] == 'completed':
+                return result
+            elif result['status'] == 'failed':
+                raise Exception(f"Pipeline failed: {result.get('error', 'Unknown error')}")
+            
+            await asyncio.sleep(poll_interval)
+            
+        except Exception as e:
+            logging.error(f"Error polling results: {e}")
+            await asyncio.sleep(poll_interval)
+    
+    raise TimeoutError(f"Pipeline did not complete within {max_wait} seconds")
+```
+
+```javascript JavaScript Async Polling
+async function waitForCompletion(client, resultId, maxWait = 300000, pollInterval = 5000) {
+  const startTime = Date.now();
   
-    Solution: Go to the root of your device and delete the \~/.mintlify folder. Afterwards, run `mintlify dev` again.
-  </Accordion>
+  while (Date.now() - startTime < maxWait) {
+    try {
+      const result = await client.getResults(resultId);
+      
+      if (result.status === 'completed') {
+        return result;
+      } else if (result.status === 'failed') {
+        throw new Error(`Pipeline failed: ${result.error || 'Unknown error'}`);
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      
+    } catch (error) {
+      console.error('Error polling results:', error);
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+  }
+  
+  throw new Error(`Pipeline did not complete within ${maxWait}ms`);
+}
+```
+</Accordion>
+
+<Accordion title="Content Policy Violations">
+Handle content policy errors gracefully:
+
+```python Python Content Policy
+def handle_content_policy_error(error_response):
+    """Handle content policy violations"""
+    if error_response.get('error_code') == 'CONTENT_POLICY_VIOLATION':
+        logging.warning(f"Content policy violation: {error_response['error']}")
+        
+        # Try with modified content or fallback strategy
+        return {
+            'action': 'modify_content',
+            'suggestion': 'Remove sensitive content and try again',
+            'fallback': 'Use generic template content'
+        }
+    
+    return None
+```
+</Accordion>
 </AccordionGroup>
 
-Curious about what changed in the CLI version? [Check out the CLI changelog.](https://www.npmjs.com/package/mintlify?activeTab=versions)
+## Performance Optimization
+
+<Steps>
+<Step title="Connection Pooling">
+Use connection pooling for better performance:
+
+```python Python Connection Pool
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+def create_session_with_retries():
+    session = requests.Session()
+    
+    # Configure retry strategy
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    
+    # Mount adapter with retry strategy
+    adapter = HTTPAdapter(max_retries=retry_strategy, pool_connections=10, pool_maxsize=10)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    
+    return session
+```
+</Step>
+
+<Step title="Request Batching">
+Batch multiple operations when possible:
+
+```python Python Batching
+class BatchProcessor:
+    def __init__(self, client, batch_size=5):
+        self.client = client
+        self.batch_size = batch_size
+        self.pending_requests = []
+    
+    def add_request(self, request_type, **kwargs):
+        self.pending_requests.append((request_type, kwargs))
+        
+        if len(self.pending_requests) >= self.batch_size:
+            return self.process_batch()
+        
+        return None
+    
+    def process_batch(self):
+        if not self.pending_requests:
+            return []
+        
+        results = []
+        for request_type, kwargs in self.pending_requests:
+            try:
+                if request_type == 'generate_posts':
+                    result = self.client.generate_posts(**kwargs)
+                elif request_type == 'chat_message':
+                    result = self.client.chat_message(**kwargs)
+                else:
+                    result = {'error': f'Unknown request type: {request_type}'}
+                
+                results.append(result)
+                
+            except Exception as e:
+                results.append({'error': str(e)})
+        
+        self.pending_requests.clear()
+        return results
+```
+</Step>
+
+<Step title="Caching Strategy">
+Implement intelligent caching for repeated requests:
+
+```python Python Caching
+import hashlib
+import json
+from functools import wraps
+
+class PostreachCache:
+    def __init__(self, ttl=3600):  # 1 hour TTL
+        self.cache = {}
+        self.ttl = ttl
+    
+    def _cache_key(self, method, **kwargs):
+        """Generate cache key from method and parameters"""
+        content = json.dumps(kwargs, sort_keys=True)
+        return hashlib.md5(f"{method}:{content}".encode()).hexdigest()
+    
+    def cached_request(self, method):
+        @wraps(method)
+        def wrapper(*args, **kwargs):
+            cache_key = self._cache_key(method.__name__, **kwargs)
+            
+            # Check cache
+            if cache_key in self.cache:
+                cached_data, timestamp = self.cache[cache_key]
+                if time.time() - timestamp < self.ttl:
+                    return cached_data
+            
+            # Make request and cache result
+            result = method(*args, **kwargs)
+            self.cache[cache_key] = (result, time.time())
+            
+            return result
+        
+        return wrapper
+
+# Usage
+cache = PostreachCache(ttl=1800)  # 30 minutes
+
+@cache.cached_request
+def cached_keyword_extraction(client, **kwargs):
+    return client.extract_keywords(**kwargs)
+```
+</Step>
+</Steps>
+
+## Monitoring and Observability
+
+<CardGroup cols={2}>
+<Card title="Request Logging" icon="file-text">
+Log all API requests for debugging and monitoring:
+
+```python
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger('postreach.client')
+
+def log_request(method, url, payload=None, response=None):
+    logger.info(f"{method} {url}")
+    if payload:
+        logger.debug(f"Request payload: {json.dumps(payload, indent=2)}")
+    if response:
+        logger.info(f"Response status: {response.status_code}")
+        logger.debug(f"Response data: {response.text}")
+```
+</Card>
+
+<Card title="Metrics Collection" icon="chart-bar">
+Track API usage and performance metrics:
+
+```python
+from dataclasses import dataclass, field
+from typing import Dict
+import time
+
+@dataclass
+class APIMetrics:
+    request_count: int = 0
+    error_count: int = 0
+    total_response_time: float = 0
+    response_times: list = field(default_factory=list)
+    
+    def record_request(self, response_time: float, success: bool):
+        self.request_count += 1
+        self.total_response_time += response_time
+        self.response_times.append(response_time)
+        
+        if not success:
+            self.error_count += 1
+    
+    @property
+    def average_response_time(self):
+        return self.total_response_time / max(self.request_count, 1)
+    
+    @property
+    def error_rate(self):
+        return self.error_count / max(self.request_count, 1)
+```
+</Card>
+</CardGroup>
+
+## Production Deployment
+
+<Warning>
+Before deploying to production, ensure you have proper error handling, monitoring, and fallback strategies in place.
+</Warning>
+
+### Deployment Checklist
+
+<Steps>
+<Step title="Security Review">
+- [ ] Session IDs stored securely (environment variables, secrets management)
+- [ ] No sensitive data in logs or error messages
+- [ ] Rate limiting implemented
+- [ ] Input validation for all user data
+</Step>
+
+<Step title="Performance Testing">
+- [ ] Load testing completed with expected traffic
+- [ ] Response time requirements met
+- [ ] Connection pooling configured
+- [ ] Caching strategy implemented
+</Step>
+
+<Step title="Monitoring Setup">
+- [ ] Request/response logging configured
+- [ ] Error alerting implemented
+- [ ] Performance metrics dashboard created
+- [ ] API health checks scheduled
+</Step>
+
+<Step title="Fallback Strategies">
+- [ ] Circuit breaker pattern implemented
+- [ ] Graceful degradation planned
+- [ ] Backup content sources available
+- [ ] User notification system ready
+</Step>
+</Steps>
+
+## Support Resources
+
+<CardGroup cols={2}>
+<Card title="🔧 Troubleshooting" icon="wrench" href="/guides/troubleshooting">
+  Common issues and solutions
+</Card>
+
+<Card title="📊 API Status" icon="signal" href="https://status.postreach.ai">
+  Real-time API status monitoring
+</Card>
+
+<Card title="💬 Developer Community" icon="users" href="https://community.postreach.ai">
+  Connect with other developers
+</Card>
+
+<Card title="📧 Technical Support" icon="headset" href="mailto:support@postreach.ai">
+  Direct technical support
+</Card>
+</CardGroup>
+
+---
+
+<Note>
+This development guide provides a solid foundation for building production-ready applications with Postreach AI. For specific implementation questions, reach out to our [technical support team](mailto:support@postreach.ai).
+</Note>

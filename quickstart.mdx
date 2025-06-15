@@ -1,97 +1,398 @@
 ---
-title: 'Quickstart'
-description: 'Start building awesome documentation in under 5 minutes'
+title: 'Quick Start Guide'
+description: 'Get up and running with Postreach AI in under 5 minutes - from setup to your first API call'
 ---
 
-## Setup your development
+# Quick Start Guide
 
-Learn how to update your docs locally and deploy them to the public.
+Welcome to Postreach AI! This guide will get you up and running with our API in under 5 minutes. By the end, you'll have generated your first social media posts using our AI-powered platform.
 
-### Edit and preview
+<Info>
+**Prerequisites**: You'll need a Postreach AI account and session ID. If you don't have one yet, [sign up here](https://dashboard.postreach.ai/signup) - it's free to get started!
+</Info>
 
-<AccordionGroup>
-  <Accordion icon="github" title="Clone your docs locally">
-    During the onboarding process, we created a repository on your Github with
-    your docs content. You can find this repository on our
-    [dashboard](https://dashboard.mintlify.com). To clone the repository
-    locally, follow these
-    [instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-    in your terminal.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Preview changes">
-    Previewing helps you make sure your changes look as intended. We built a
-    command line interface to render these changes locally. 
-    1. Install the
-    [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the
-    documentation changes locally with this command: ``` npm i -g mintlify ```
-    2. Run the following command at the root of your documentation (where
-    `docs.json` is): ``` mintlify dev ```
-    <Note>
-      If you’re currently using the legacy ```mint.json``` configuration file, please update the Mintlify CLI:
+## Step 1: Get Your API Credentials
 
+<Steps>
+<Step title="Create Your Account">
+Visit the [Postreach AI Dashboard](https://dashboard.postreach.ai/signup) and create your free account.
 
-      ```npm i -g mintlify@latest```
-      And run the new upgrade command in your docs repository:
+<Card title="Sign Up" icon="user-plus" href="https://dashboard.postreach.ai/signup">
+  Create your free Postreach AI account
+</Card>
+</Step>
 
-      ```mintlify upgrade```
-      You should now be using the new ```docs.json``` configuration file. Feel free to delete the ```mint.json``` file from your repository.
-    </Note>
-  </Accordion>
-</AccordionGroup>
+<Step title="Get Your Session ID">
+After logging in, navigate to **API Settings** in your dashboard to find your session ID.
 
-### Deploy your changes
+<Warning>
+Keep your session ID secure! It's used to authenticate all your API requests.
+</Warning>
+</Step>
 
-<AccordionGroup>
+<Step title="Test Your Connection">
+Verify your credentials with a quick health check:
 
-<Accordion icon="message-bot" title="Install our Github app">
-  Our Github app automatically deploys your changes to your docs site, so you
-  don't need to manage deployments yourself. You can find the link to install on
-  your [dashboard](https://dashboard.mintlify.com). Once the bot has been
-  successfully installed, there should be a check mark next to the commit hash
-  of the repo.
-</Accordion>
-<Accordion icon="rocket" title="Push your changes">
-  [Commit and push your changes to
-  Git](https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository#about-git-push)
-  for your changes to update in your docs site. If you push and don't see that
-  the Github app successfully deployed your changes, you can also manually
-  update your docs through our [dashboard](https://dashboard.mintlify.com).
-</Accordion>
+```bash Test Connection
+curl -X GET 'https://api.postreach.ai/health' \
+  -H 'X-Session-ID: your-session-id-here'
+```
 
-</AccordionGroup>
+You should receive a `200 OK` response confirming your connection.
+</Step>
+</Steps>
 
-## Update your docs
+## Step 2: Generate Your First Posts
 
-Add content directly in your files with MDX syntax and React components. You can use any of our components, or even build your own.
+Let's create your first social media posts! We'll use our pipeline API to generate content across multiple platforms.
 
-<CardGroup>
+<Tabs>
+<Tab title="cURL">
+```bash Generate Posts
+curl -X POST 'https://api.postreach.ai/pipeline/generate' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: your-session-id-here' \
+  -d '{
+    "mode": "Autopilot",
+    "social_post_number": {
+      "linkedin": 1,
+      "twitter": 2,
+      "facebook": 1
+    },
+    "user_info": [
+      {
+        "type": "topic",
+        "content": "The future of artificial intelligence in business",
+        "weight": 1.5
+      }
+    ],
+    "schedule_start_date": "2024-01-20T09:00:00Z",
+    "schedule_end_date": "2024-01-27T18:00:00Z",
+    "country": "US",
+    "language": "en"
+  }'
+```
+</Tab>
 
-<Card title="Add Content With MDX" icon="file" href="/essentials/markdown">
-  Add content to your docs with MDX syntax.
+<Tab title="Python">
+```python Generate Posts
+import requests
+import json
+from datetime import datetime, timedelta
+
+# Your API configuration
+API_BASE = "https://api.postreach.ai"
+SESSION_ID = "your-session-id-here"  # Replace with your actual session ID
+
+headers = {
+    "Content-Type": "application/json",
+    "X-Session-ID": SESSION_ID
+}
+
+# Generate posts payload
+payload = {
+    "mode": "Autopilot",
+    "social_post_number": {
+        "linkedin": 1,
+        "twitter": 2,
+        "facebook": 1
+    },
+    "user_info": [
+        {
+            "type": "topic",
+            "content": "The future of artificial intelligence in business",
+            "weight": 1.5
+        }
+    ],
+    "schedule_start_date": (datetime.now() + timedelta(days=1)).isoformat() + "Z",
+    "schedule_end_date": (datetime.now() + timedelta(days=8)).isoformat() + "Z",
+    "country": "US",
+    "language": "en"
+}
+
+# Make the API call
+response = requests.post(f"{API_BASE}/pipeline/generate", 
+                        headers=headers, 
+                        json=payload)
+
+if response.status_code == 200:
+    result = response.json()
+    print(f"🎉 Success! Pipeline ID: {result['id']}")
+    print(f"📊 Result ID: {result['result_id']}")
+    print(f"⏱️  Status: {result['status']}")
+    
+    # If posts are already generated
+    if 'posts' in result:
+        print(f"✅ Generated {len(result['posts'])} posts!")
+        for post in result['posts']:
+            print(f"📱 {post['platform'].title()}: {post['content'][:100]}...")
+else:
+    print(f"❌ Error: {response.status_code}")
+    print(response.text)
+```
+</Tab>
+
+<Tab title="JavaScript">
+```javascript Generate Posts
+const API_BASE = 'https://api.postreach.ai';
+const SESSION_ID = 'your-session-id-here'; // Replace with your actual session ID
+
+const headers = {
+  'Content-Type': 'application/json',
+  'X-Session-ID': SESSION_ID
+};
+
+const payload = {
+  mode: 'Autopilot',
+  social_post_number: {
+    linkedin: 1,
+    twitter: 2,
+    facebook: 1
+  },
+  user_info: [
+    {
+      type: 'topic',
+      content: 'The future of artificial intelligence in business',
+      weight: 1.5
+    }
+  ],
+  schedule_start_date: new Date(Date.now() + 24*60*60*1000).toISOString(),
+  schedule_end_date: new Date(Date.now() + 8*24*60*60*1000).toISOString(),
+  country: 'US',
+  language: 'en'
+};
+
+async function generatePosts() {
+  try {
+    const response = await fetch(`${API_BASE}/pipeline/generate`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('🎉 Success! Pipeline ID:', result.id);
+      console.log('📊 Result ID:', result.result_id);
+      console.log('⏱️  Status:', result.status);
+      
+      // If posts are already generated
+      if (result.posts) {
+        console.log(`✅ Generated ${result.posts.length} posts!`);
+        result.posts.forEach(post => {
+          console.log(`📱 ${post.platform}: ${post.content.substring(0, 100)}...`);
+        });
+      }
+    } else {
+      console.error('❌ Error:', response.status);
+      console.error(await response.text());
+    }
+  } catch (error) {
+    console.error('❌ Request failed:', error);
+  }
+}
+
+generatePosts();
+```
+</Tab>
+</Tabs>
+
+## Step 3: Retrieve Your Results
+
+If your pipeline is still processing, you can check the results using the `result_id` from the previous response:
+
+<CodeGroup>
+```bash Get Results
+curl -X GET 'https://api.postreach.ai/results/your-result-id-here' \
+  -H 'X-Session-ID: your-session-id-here'
+```
+
+```python Python
+result_id = "your-result-id-here"  # From the previous response
+response = requests.get(f"{API_BASE}/results/{result_id}", headers=headers)
+
+if response.status_code == 200:
+    result = response.json()
+    print(f"📊 Status: {result['status']}")
+    
+    if result['status'] == 'completed':
+        for post in result['posts']:
+            print(f"\n📱 Platform: {post['platform'].title()}")
+            print(f"📝 Content: {post['content']}")
+            if post.get('hashtags'):
+                print(f"🏷️  Hashtags: {', '.join(post['hashtags'])}")
+            print(f"⭐ Engagement Score: {post.get('engagement_score', 'N/A')}")
+```
+
+```javascript JavaScript
+const resultId = 'your-result-id-here'; // From the previous response
+
+const response = await fetch(`${API_BASE}/results/${resultId}`, {
+  headers: headers
+});
+
+if (response.ok) {
+  const result = await response.json();
+  console.log('📊 Status:', result.status);
+  
+  if (result.status === 'completed') {
+    result.posts.forEach(post => {
+      console.log(`\n📱 Platform: ${post.platform}`);
+      console.log(`📝 Content: ${post.content}`);
+      if (post.hashtags) {
+        console.log(`🏷️  Hashtags: ${post.hashtags.join(', ')}`);
+      }
+      console.log(`⭐ Engagement Score: ${post.engagement_score || 'N/A'}`);
+    });
+  }
+}
+```
+</CodeGroup>
+
+## Step 4: Try the Interactive Chatbot
+
+Test our conversational AI interface for more interactive content generation:
+
+<CodeGroup>
+```bash Chat API
+curl -X POST 'https://api.postreach.ai/chatbot/message' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: your-session-id-here' \
+  -d '{
+    "message": {
+      "content": "Create a LinkedIn post about remote work productivity tips",
+      "type": "text"
+    },
+    "mode": "prompt2post",
+    "user_background": {
+      "industry": "Technology",
+      "tone": "professional",
+      "target_audience": "Remote workers and managers",
+      "platforms": ["linkedin"]
+    }
+  }'
+```
+
+```python Python
+chat_payload = {
+    "message": {
+        "content": "Create a LinkedIn post about remote work productivity tips",
+        "type": "text"
+    },
+    "mode": "prompt2post",
+    "user_background": {
+        "industry": "Technology",
+        "tone": "professional",
+        "target_audience": "Remote workers and managers",
+        "platforms": ["linkedin"]
+    }
+}
+
+response = requests.post(f"{API_BASE}/chatbot/message", 
+                        headers=headers, 
+                        json=chat_payload)
+
+if response.status_code == 200:
+    result = response.json()
+    print("🤖 AI Response:")
+    for content in result['content']:
+        if content['type'] == 'text':
+            print(content['text'])
+```
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="🔧 Explore All Endpoints" icon="code" href="/api-reference/introduction">
+  Discover our complete API reference with detailed documentation
 </Card>
 
-<Card
-  title="Add Code Blocks"
-  icon="square-code"
-  href="/essentials/code"
->
-  Add code directly to your docs with syntax highlighting.
+<Card title="🎮 Try the Playground" icon="play" href="/api-reference/playground">
+  Test all endpoints interactively in your browser
 </Card>
 
-<Card
-  title="Add Images"
-  icon="image"
-  href="/essentials/images"
->
-  Add images to your docs to make them more engaging.
+<Card title="📖 Integration Guides" icon="book" href="/guides">
+  Follow step-by-step guides for popular frameworks
 </Card>
 
-<Card
-  title="Add Custom Components"
-  icon="puzzle-piece"
-  href="/essentials/reusable-snippets"
->
-  Add templates to your docs to make them more reusable.
+<Card title="🤝 Join Community" icon="users" href="https://community.postreach.ai">
+  Connect with other developers using Postreach AI
 </Card>
-
 </CardGroup>
+
+## Common Use Cases to Try Next
+
+<AccordionGroup>
+<Accordion title="🌐 URL-to-Post Generation">
+Convert any article or blog post into social media content:
+
+```json
+{
+  "message": {
+    "content": "https://techcrunch.com/2024/01/15/ai-breakthrough-2024",
+    "type": "url"
+  },
+  "mode": "url2post",
+  "user_background": {
+    "industry": "Technology",
+    "platforms": ["twitter", "linkedin"]
+  }
+}
+```
+</Accordion>
+
+<Accordion title="🖼️ Image-to-Post Creation">
+Generate posts from images with context:
+
+```json
+{
+  "message": {
+    "content": "https://example.com/product-image.jpg",
+    "type": "image",
+    "metadata": {"image_context": "New product launch"}
+  },
+  "mode": "image2post",
+  "user_background": {
+    "industry": "E-commerce",
+    "tone": "excited"
+  }
+}
+```
+</Accordion>
+
+<Accordion title="🔍 Website Analysis">
+Extract brand information and content from websites:
+
+```json
+{
+  "url": "https://www.yourcompany.com",
+  "include_logo": true,
+  "include_colors": true,
+  "include_brand": true
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Need Help?
+
+<Note>
+Stuck on something? We're here to help! Check out our [support resources](/support) or reach out directly at [support@postreach.ai](mailto:support@postreach.ai).
+</Note>
+
+<CardGroup cols={3}>
+<Card title="📚 Documentation" icon="book" href="/api-reference/introduction">
+  Complete API reference
+</Card>
+<Card title="💬 Community" icon="users" href="https://community.postreach.ai">
+  Developer community
+</Card>
+<Card title="📧 Support" icon="headset" href="mailto:support@postreach.ai">
+  Direct support
+</Card>
+</CardGroup>
+
+---
+
+🎉 **Congratulations!** You've successfully made your first API calls to Postreach AI. You're now ready to integrate intelligent content generation into your applications!
