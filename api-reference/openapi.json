@@ -22,7 +22,7 @@
   ],
   "security": [
     {
-      "sessionAuth": []
+      "bearerAuth": []
     }
   ],
   "paths": {
@@ -91,24 +91,30 @@
         }
       }
     },
-    "/results/{result_id}": {
+    "/pipeline/get_result": {
       "get": {
         "tags": ["Pipeline Operations"],
         "summary": "Get Pipeline Results",
         "description": "Retrieve the results of a completed social media post generation pipeline",
         "operationId": "getPipelineResults",
-        "parameters": [
-          {
-            "name": "result_id",
-            "in": "path",
-            "required": true,
-            "description": "The unique identifier for the pipeline result",
-            "schema": {
-              "type": "string",
-              "example": "pipeline-abc123-result-456789"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetResultRequest"
+              },
+              "examples": {
+                "get_result": {
+                  "summary": "Get Pipeline Result",
+                  "value": {
+                    "result_id": "pipeline-abc123-result-456789"
+                  }
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Pipeline results retrieved successfully",
@@ -227,7 +233,7 @@
         }
       }
     },
-    "/website/analyze": {
+    "/website-analyser/analyze": {
       "post": {
         "tags": ["Website Analysis"],
         "summary": "Analyze Website",
@@ -267,15 +273,218 @@
           }
         }
       }
+    },
+    "/post-edit/regenerate-caption": {
+      "post": {
+        "tags": ["Post Edit"],
+        "summary": "Regenerate Post Caption",
+        "description": "Regenerate the caption of a social media post using conversation context or user preferences",
+        "operationId": "regenerateCaption",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostEditRequest"
+              },
+              "examples": {
+                "regenerate_with_thread": {
+                  "summary": "Regenerate Caption from Thread Context",
+                  "value": {
+                    "thread_id": "thread-abc123",
+                    "user_preferences": "Make it more professional and engaging",
+                    "number_of_messages": 10,
+                    "length_of_caption": 250
+                  }
+                },
+                "regenerate_with_content": {
+                  "summary": "Regenerate Caption from Post Content",
+                  "value": {
+                    "post_content": "Check out this amazing new AI tool that's revolutionizing social media!",
+                    "user_preferences": "Add relevant hashtags and make it more conversational",
+                    "length_of_caption": 300
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Caption regenerated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostEditResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/post-edit/regenerate-image": {
+      "post": {
+        "tags": ["Post Edit"],
+        "summary": "Regenerate Post Image",
+        "description": "Regenerate the image for a social media post using conversation thread context",
+        "operationId": "regenerateImage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostEditRequest"
+              },
+              "examples": {
+                "regenerate_image": {
+                  "summary": "Regenerate Image from Thread",
+                  "value": {
+                    "thread_id": "thread-abc123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image regenerated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostEditResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Thread ID is required for image regeneration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/post-edit/remove-emoji": {
+      "post": {
+        "tags": ["Post Edit"],
+        "summary": "Remove Emojis from Post",
+        "description": "Remove all emoji characters from social media post content while preserving the text",
+        "operationId": "removeEmoji",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostEditRequest"
+              },
+              "examples": {
+                "remove_emoji": {
+                  "summary": "Remove Emojis from Post Content",
+                  "value": {
+                    "post_content": "Just launched our new product! 🚀✨ So excited to share this with everyone! 🎉💡 Check it out at our website! 🌟"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Emojis removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostEditResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Post content is required for emoji removal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/post-edit/remove-hashtag": {
+      "post": {
+        "tags": ["Post Edit"],
+        "summary": "Remove Hashtags from Post",
+        "description": "Remove all hashtag characters from social media post content while preserving the text",
+        "operationId": "removeHashtag",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostEditRequest"
+              },
+              "examples": {
+                "remove_hashtag": {
+                  "summary": "Remove Hashtags from Post Content",
+                  "value": {
+                    "post_content": "Just launched our new AI product! #AI #innovation #technology #startup #ProductLaunch Check it out at our website!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hashtags removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostEditResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Post content is required for hashtag removal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "securitySchemes": {
-      "sessionAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "X-Session-ID",
-        "description": "Session-based authentication using session ID"
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token authentication"
       }
     },
     "schemas": {
@@ -321,8 +530,6 @@
           },
           "country": {"type": "string", "description": "Target country for localization"},
           "language": {"type": "string", "description": "Target language for content generation"},
-          "session_id": {"type": "string"},
-          "track_id": {"type": "string"},
           "user_id": {"type": "string"}
         }
       },
@@ -353,6 +560,17 @@
           "scheduled_time": {"type": "string", "format": "date-time"},
           "hashtags": {"type": "array", "items": {"type": "string"}},
           "engagement_score": {"type": "number"}
+        }
+      },
+      "GetResultRequest": {
+        "type": "object",
+        "required": ["result_id"],
+        "properties": {
+          "result_id": {
+            "type": "string",
+            "description": "The unique identifier for the pipeline result",
+            "example": "pipeline-abc123-result-456789"
+          }
         }
       },
       "GetResultResponse": {
@@ -387,8 +605,7 @@
               "platforms": {"type": "array", "items": {"type": "string"}}
             }
           },
-          "is_dummy_mode": {"type": "boolean", "default": false},
-          "session_id": {"type": "string"}
+          "is_dummy_mode": {"type": "boolean", "default": false}
         }
       },
       "ChatbotResponse": {
@@ -444,9 +661,7 @@
             }
           },
           "task_id": {"type": "string"},
-          "agent_id": {"type": "string"},
-          "session_id": {"type": "string"},
-          "track_id": {"type": "string"}
+          "agent_id": {"type": "string"}
         }
       },
       "KeywordExtractionResponse": {
@@ -489,9 +704,7 @@
           "additional_fields": {
             "type": "array",
             "items": {"type": "string", "enum": ["social_links", "contact_info", "team_info", "product_info", "pricing_info", "blog_posts"]}
-          },
-          "session_id": {"type": "string"},
-          "track_id": {"type": "string"}
+          }
         }
       },
       "WebsiteAnalysisResponse": {
@@ -540,6 +753,99 @@
           "error": {"type": "string"},
           "execution_time": {"type": "number"}
         }
+      },
+      "PostEditRequest": {
+        "type": "object",
+        "properties": {
+          "post_content": {
+            "type": "string",
+            "description": "The post content to edit (required for remove_emoji and remove_hashtag)"
+          },
+          "thread_id": {
+            "type": "string", 
+            "description": "Thread ID for conversation context (used for regenerate_caption and required for regenerate_image)"
+          },
+          "user_preferences": {
+            "type": "string",
+            "description": "User preferences for caption regeneration"
+          },
+          "number_of_messages": {
+            "type": "integer",
+            "default": 10,
+            "description": "Number of latest messages to use for context"
+          },
+          "length_of_caption": {
+            "type": "integer", 
+            "default": 300,
+            "description": "Length of the caption to generate"
+          },
+          "session_id": {
+            "type": "string",
+            "description": "Session ID for tracking"
+          },
+          "track_id": {
+            "type": "string",
+            "description": "Track ID for tracking"
+          }
+        }
+      },
+      "PostEditResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the post edit result"
+          },
+          "operation": {
+            "type": "string",
+            "description": "The editing operation performed"
+          },
+          "original_content": {
+            "type": "string",
+            "description": "The original post content"
+          },
+          "edited_content": {
+            "type": "string",
+            "description": "The edited post content"
+          },
+          "original_prompt": {
+            "type": "string",
+            "description": "The original image prompt"
+          },
+          "original_image": {
+            "type": "string",
+            "description": "The URL of the original image"
+          },
+          "edited_image": {
+            "type": "string",
+            "description": "The URL of the edited image"
+          },
+          "processing_time": {
+            "type": "number",
+            "description": "Time taken to process the edit"
+          },
+          "thread_id": {
+            "type": "string",
+            "description": "Thread ID used for context"
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Agent ID used for regeneration"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "failed"],
+            "description": "Status of the edit operation"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message if edit failed"
+          },
+          "created_at": {
+            "type": "number",
+            "description": "Timestamp when edit was created"
+          }
+        }
       }
     }
   },
@@ -559,6 +865,10 @@
     {
       "name": "Website Analysis",
       "description": "Website content extraction and brand analysis"
+    },
+    {
+      "name": "Post Edit",
+      "description": "Post content editing and regeneration"
     }
   ]
 } 

@@ -1,6 +1,6 @@
 ---
-title: 'Postreach AI Documentation'
-description: 'Comprehensive documentation for Postreach AI - the leading platform for automated social media content generation and management'
+title: 'Postreach AI Internal API Documentation'
+description: 'Internal API documentation for Postreach AI SaaS platform - automated social media content generation and management'
 ---
 
 <img
@@ -14,9 +14,9 @@ description: 'Comprehensive documentation for Postreach AI - the leading platfor
   alt="Postreach AI Platform"
 />
 
-# Welcome to Postreach AI
+# Welcome to Postreach AI Internal API
 
-**Postreach AI** is the industry-leading platform for automated social media content generation, powered by advanced AI models and sophisticated workflow orchestration. Our comprehensive API suite enables developers to integrate intelligent content creation directly into their applications.
+**Postreach AI Internal API** powers our industry-leading SaaS platform for automated social media content generation. This documentation covers the internal API endpoints used by the Postreach AI platform, built with advanced AI models and sophisticated workflow orchestration.
 
 <CardGroup cols={2}>
   <Card
@@ -93,63 +93,15 @@ Session-based authentication, rate limiting, comprehensive error handling, and d
 ## Getting Started
 
 <Steps>
-<Step title="🔑 Get Your API Access">
-Sign up for a Postreach AI account and obtain your session credentials from the dashboard.
+<Step title="🔑 Internal API Access">
+This is the internal API documentation for Postreach AI's SaaS platform. API access is managed internally through your development environment credentials.
 
-<Card title="Create Account" icon="user-plus" href="https://dashboard.postreach.ai/signup">
-  Get started with our free tier - no credit card required
-</Card>
+<Warning>
+This API is for internal use only and powers the Postreach AI SaaS platform. External developers should use the public Postreach AI APIs.
+</Warning>
 </Step>
 
-<Step title="📖 Explore the API">
-Familiarize yourself with our comprehensive API endpoints and capabilities.
 
-<CodeGroup>
-```bash Quick Test
-curl -X POST 'https://api.postreach.ai/pipeline/generate' \
-  -H 'Content-Type: application/json' \
-  -H 'X-Session-ID: your-session-id' \
-  -d '{
-    "mode": "Autopilot",
-    "social_post_number": {"linkedin": 1, "twitter": 2},
-    "user_info": [{"type": "topic", "content": "AI trends 2024"}],
-    "schedule_start_date": "2024-01-20T09:00:00Z",
-    "schedule_end_date": "2024-01-27T18:00:00Z"
-  }'
-```
-
-```python Python
-import requests
-
-response = requests.post('https://api.postreach.ai/pipeline/generate', 
-  headers={'X-Session-ID': 'your-session-id'},
-  json={
-    'mode': 'Autopilot',
-    'social_post_number': {'linkedin': 1, 'twitter': 2},
-    'user_info': [{'type': 'topic', 'content': 'AI trends 2024'}],
-    'schedule_start_date': '2024-01-20T09:00:00Z',
-    'schedule_end_date': '2024-01-27T18:00:00Z'
-  })
-```
-
-```javascript JavaScript
-const response = await fetch('https://api.postreach.ai/pipeline/generate', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Session-ID': 'your-session-id'
-  },
-  body: JSON.stringify({
-    mode: 'Autopilot',
-    social_post_number: {linkedin: 1, twitter: 2},
-    user_info: [{type: 'topic', content: 'AI trends 2024'}],
-    schedule_start_date: '2024-01-20T09:00:00Z',
-    schedule_end_date: '2024-01-27T18:00:00Z'
-  })
-});
-```
-</CodeGroup>
-</Step>
 </Steps>
 
 ## Popular Use Cases
