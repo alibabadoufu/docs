@@ -1,0 +1,380 @@
+---
+title: 'Remove Hashtag'
+description: 'Clean text content by removing all hashtag characters while preserving the underlying text'
+---
+
+## Overview
+
+The remove hashtag endpoint strips all hashtag characters (`#`) from social media post content while preserving the underlying text. This is useful for adapting content to platforms that don't support hashtags or when you want cleaner text for email campaigns, press releases, or other marketing materials.
+
+<Info>
+This endpoint requires frontend role authentication and processes text content quickly with minimal processing time.
+</Info>
+
+## Endpoint
+
+**POST** `/api/v1/post-edit/remove-hashtag`
+
+## Authentication
+
+<Warning>
+Requires frontend role authentication. Include your bearer token in the Authorization header.
+</Warning>
+
+## Request Parameters
+
+<ParamField body="post_content" type="string" required>
+The post content containing hashtags to be removed. This field is **required** for the operation.
+</ParamField>
+
+<ParamField body="session_id" type="string">
+Session identifier for request tracking and analytics
+</ParamField>
+
+<ParamField body="track_id" type="string">
+Track identifier for request correlation across systems
+</ParamField>
+
+<Warning>
+The `post_content` parameter is required and must contain the text you want to clean of hashtag characters.
+</Warning>
+
+## Response
+
+<ResponseField name="id" type="string">
+Unique identifier for the post edit result
+</ResponseField>
+
+<ResponseField name="operation" type="string">
+Always returns `remove_hashtag` for this endpoint
+</ResponseField>
+
+<ResponseField name="original_content" type="string">
+The original post content before hashtag removal
+</ResponseField>
+
+<ResponseField name="edited_content" type="string">
+The cleaned post content with all hashtag characters removed
+</ResponseField>
+
+<ResponseField name="processing_time" type="number">
+Time taken to process the hashtag removal in seconds (typically under 0.5 seconds)
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Operation status: `success` or `failed`
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if the operation failed (only present when status is `failed`)
+</ResponseField>
+
+<ResponseField name="created_at" type="number">
+Unix timestamp when the edit result was created
+</ResponseField>
+
+## Examples
+
+### Basic Hashtag Removal
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/remove-hashtag' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "post_content": "Just launched our new AI product! #AI #innovation #technology #startup #ProductLaunch Check it out at our website!"
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_5555555555",
+    "operation": "remove_hashtag",
+    "original_content": "Just launched our new AI product! #AI #innovation #technology #startup #ProductLaunch Check it out at our website!",
+    "edited_content": "Just launched our new AI product!     Check it out at our website!",
+    "processing_time": 0.08,
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### Mixed Content with Hashtags
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/remove-hashtag' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "post_content": "Excited to announce our partnership with @CompanyName! 🤝 This collaboration will revolutionize #fintech #blockchain #innovation. Learn more at partnership.com #press #news",
+        "session_id": "session_12345",
+        "track_id": "track_67890"
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_7766554433",
+    "operation": "remove_hashtag",
+    "original_content": "Excited to announce our partnership with @CompanyName! 🤝 This collaboration will revolutionize #fintech #blockchain #innovation. Learn more at partnership.com #press #news",
+    "edited_content": "Excited to announce our partnership with @CompanyName! 🤝 This collaboration will revolutionize   . Learn more at partnership.com  ",
+    "processing_time": 0.06,
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### Professional Content Adaptation
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/remove-hashtag' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "post_content": "Q3 revenue grew 45% YoY, driven by strong performance in our core markets. #earnings #growth #success #Q3results Our team delivered exceptional results across all verticals. #teamwork #leadership"
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_2233445566",
+    "operation": "remove_hashtag",
+    "original_content": "Q3 revenue grew 45% YoY, driven by strong performance in our core markets. #earnings #growth #success #Q3results Our team delivered exceptional results across all verticals. #teamwork #leadership",
+    "edited_content": "Q3 revenue grew 45% YoY, driven by strong performance in our core markets.    Our team delivered exceptional results across all verticals.  ",
+    "processing_time": 0.04,
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+## How It Works
+
+<Steps>
+<Step title="Identify Hashtags">
+    The system scans the content to locate all hashtag patterns, including both the `#` symbol and the associated text.
+    
+    <Info>
+    The algorithm recognizes hashtags by the `#` character followed by alphanumeric text without spaces.
+    </Info>
+</Step>
+
+<Step title="Remove Hash Symbols">
+    All `#` characters are removed from the content, regardless of whether they form valid hashtags or appear standalone.
+    
+    <Tip>
+    The system removes the `#` character specifically, not the text that follows it, preserving the underlying keywords.
+    </Tip>
+</Step>
+
+<Step title="Preserve Other Content">
+    All other content including mentions (@), URLs, punctuation, and special characters are preserved exactly as they appear.
+    
+    <Note>
+    Email addresses, phone numbers, and other content that might contain `#` symbols are processed the same way.
+    </Note>
+</Step>
+
+<Step title="Return Cleaned Text">
+    The cleaned content is returned with original and edited versions for comparison.
+</Step>
+</Steps>
+
+## What Gets Removed
+
+<Tabs>
+<Tab title="Standard Hashtags">
+**Common hashtag patterns:**
+- `#AI` → `AI`
+- `#innovation` → `innovation` 
+- `#startup` → `startup`
+- `#ProductLaunch` → `ProductLaunch`
+- `#SocialMediaMarketing` → `SocialMediaMarketing`
+</Tab>
+
+<Tab title="Hashtag Variations">
+**Different hashtag formats:**
+- `#tech2024` → `tech2024`
+- `#COVID-19` → `COVID-19` (note: hyphen preserved)
+- `#B2B` → `B2B`
+- `#CRM_software` → `CRM_software`
+- `#web3.0` → `web3.0`
+</Tab>
+
+<Tab title="Special Cases">
+**Edge cases and special handling:**
+- `#` (standalone) → ` ` (removed)
+- `##hashtag` → `hashtag` (both # removed)
+- `#123` → `123` (numbers preserved)
+- `#hashtag!` → `hashtag!` (punctuation preserved)
+</Tab>
+</Tabs>
+
+## What Gets Preserved
+
+<Check>
+**All other content remains intact:**
+- Mentions: `@username` stays `@username`
+- URLs: `https://example.com` unchanged
+- Email: `contact@company.com` unchanged
+- Text, numbers, and standard punctuation
+- Special characters (except `#`)
+- Emojis and other Unicode characters
+</Check>
+
+## Error Handling
+
+<ResponseExample>
+```json Error Response
+{
+    "id": "edit_error_987",
+    "operation": "remove_hashtag",
+    "status": "failed",
+    "error": "Post content is required for hashtag removal",
+    "processing_time": 0.02,
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### Common Errors
+
+<AccordionGroup>
+<Accordion title="Missing Post Content">
+**Error:** "Post content is required for hashtag removal"
+
+**Solution:** Include the `post_content` parameter with the text you want to clean. This field is mandatory for the operation.
+</Accordion>
+
+<Accordion title="Empty Content">
+**Error:** "Post content cannot be empty"
+
+**Solution:** Ensure the `post_content` field contains actual text content, not an empty string or just whitespace.
+</Accordion>
+
+<Accordion title="Processing Error">
+**Error:** "Failed to process content for hashtag removal"
+
+**Solution:** This is typically a temporary issue. Retry the request. If the problem persists, verify your content doesn't contain unusual formatting.
+</Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+### Email Marketing
+Transform social media content for email campaigns where hashtags don't provide value.
+
+```json
+Input: "Join our webinar on #digitalmarketing strategies! #marketing #webinar"
+Output: "Join our webinar on digitalmarketing strategies!  "
+```
+
+### Press Releases
+Create professional press content from social media posts.
+
+### Newsletter Content
+Clean content for professional newsletters and corporate communications.
+
+### Platform Migration
+Adapt content from hashtag-heavy platforms (Twitter, Instagram) to platforms that don't use hashtags effectively.
+
+### Print Materials
+Prepare social content for print advertising or brochures where hashtags aren't relevant.
+
+## Best Practices
+
+### Content Review
+<Tip>
+Always review the cleaned content before using it, as hashtag removal may create spacing issues or affect readability.
+</Tip>
+
+- **Check spacing** - Multiple consecutive hashtags may leave extra spaces
+- **Review flow** - Ensure the text reads naturally without hashtags
+- **Preserve meaning** - Verify that important keywords aren't lost in the cleaning process
+
+### Strategic Hashtag Handling
+
+**Before removal, consider:**
+1. Which hashtags contain important keywords worth preserving?
+2. Are there hashtags that should be converted to regular text?
+3. Does the content need restructuring after hashtag removal?
+
+**Post-processing options:**
+- Manual editing to improve spacing
+- Converting important hashtag text to regular keywords
+- Restructuring sentences that relied heavily on hashtags
+
+### Platform-Specific Considerations
+
+<Tabs>
+<Tab title="Email Marketing">
+- Hashtags provide no SEO or discovery value in email
+- Focus on clear calls-to-action instead
+- Use bullet points for keyword emphasis
+</Tab>
+
+<Tab title="Press Releases">
+- Professional media doesn't use hashtag formatting
+- Convert hashtag keywords to natural language
+- Maintain formal business tone throughout
+</Tab>
+
+<Tab title="Print Materials">
+- Hashtags are meaningless in print context
+- Focus on clear messaging and branding
+- Use traditional formatting for emphasis
+</Tab>
+</Tabs>
+
+### Workflow Integration
+
+**Recommended process:**
+1. **Extract hashtags** - Save hashtag list before removal for reference
+2. **Apply removal** - Clean content using the API
+3. **Review and edit** - Manually adjust spacing and flow
+4. **Incorporate keywords** - Add important hashtag keywords back as natural text
+5. **Final review** - Ensure content meets platform requirements
+
+### Content Optimization
+
+**After hashtag removal:**
+- **Add structure** - Use headings, bullet points, or numbered lists
+- **Enhance readability** - Break up long paragraphs that relied on hashtag breaks
+- **Include CTAs** - Add clear calls-to-action where hashtag CTAs were removed
+- **Preserve SEO** - Integrate important keywords naturally into sentences
+
+## Performance and Rate Limits
+
+<Info>
+Hashtag removal is a fast operation with minimal processing time, typically under 0.1 seconds.
+</Info>
+
+**Processing characteristics:**
+- **Speed** - Nearly instantaneous for most content lengths
+- **Scalability** - Suitable for batch processing of multiple posts
+- **Reliability** - Simple text processing with high success rate
+
+**Rate limits:**
+- 20 requests per minute for hashtag removal operations
+- No special limitations on content length
+- Suitable for automated workflow integration
+
+<CardGroup cols={2}>
+<Card title="Remove Emoji" icon="face-smile" href="/api-reference/post-edit/remove-emoji">
+    Clean text content by removing emoji characters
+</Card>
+
+<Card title="Regenerate Image" icon="image" href="/api-reference/post-edit/regenerate-image">
+    Generate new images from conversation context
+</Card>
+</CardGroup> 

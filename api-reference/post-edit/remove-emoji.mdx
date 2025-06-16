@@ -1,0 +1,349 @@
+---
+title: 'Remove Emoji'
+description: 'Clean text content by removing all emoji characters while preserving text and formatting'
+---
+
+## Overview
+
+The remove emoji endpoint strips all emoji characters from social media post content while preserving the underlying text and formatting. This is useful for adapting content to platforms with strict formatting requirements or professional contexts where emojis may not be appropriate.
+
+<Info>
+This endpoint requires frontend role authentication and processes text content quickly with minimal processing time.
+</Info>
+
+## Endpoint
+
+**POST** `/api/v1/post-edit/remove-emoji`
+
+## Authentication
+
+<Warning>
+Requires frontend role authentication. Include your bearer token in the Authorization header.
+</Warning>
+
+## Request Parameters
+
+<ParamField body="post_content" type="string" required>
+The post content containing emojis to be removed. This field is **required** for the operation.
+</ParamField>
+
+<ParamField body="session_id" type="string">
+Session identifier for request tracking and analytics
+</ParamField>
+
+<ParamField body="track_id" type="string">
+Track identifier for request correlation across systems
+</ParamField>
+
+<Warning>
+The `post_content` parameter is required and must contain the text you want to clean of emoji characters.
+</Warning>
+
+## Response
+
+<ResponseField name="id" type="string">
+Unique identifier for the post edit result
+</ResponseField>
+
+<ResponseField name="operation" type="string">
+Always returns `remove_emoji` for this endpoint
+</ResponseField>
+
+<ResponseField name="original_content" type="string">
+The original post content before emoji removal
+</ResponseField>
+
+<ResponseField name="edited_content" type="string">
+The cleaned post content with all emoji characters removed
+</ResponseField>
+
+<ResponseField name="processing_time" type="number">
+Time taken to process the emoji removal in seconds (typically under 0.5 seconds)
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Operation status: `success` or `failed`
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if the operation failed (only present when status is `failed`)
+</ResponseField>
+
+<ResponseField name="created_at" type="number">
+Unix timestamp when the edit result was created
+</ResponseField>
+
+## Examples
+
+### Basic Emoji Removal
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/remove-emoji' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "post_content": "Just launched our new product! 🚀✨ So excited to share this with everyone! 🎉💡 Check it out at our website! 🌟"
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_1234567890",
+    "operation": "remove_emoji",
+    "original_content": "Just launched our new product! 🚀✨ So excited to share this with everyone! 🎉💡 Check it out at our website! 🌟",
+    "edited_content": "Just launched our new product!  So excited to share this with everyone!  Check it out at our website! ",
+    "processing_time": 0.12,
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### Professional Content Cleaning
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/remove-emoji' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "post_content": "📈 Q4 results exceeded expectations! 💼 Revenue up 25% YoY 📊 Thanks to our amazing team! 🙏✨ Read the full report: link.com/q4-results 📝",
+        "session_id": "session_12345",
+        "track_id": "track_67890"
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_9988776655",
+    "operation": "remove_emoji",
+    "original_content": "📈 Q4 results exceeded expectations! 💼 Revenue up 25% YoY 📊 Thanks to our amazing team! 🙏✨ Read the full report: link.com/q4-results 📝",
+    "edited_content": " Q4 results exceeded expectations!  Revenue up 25% YoY  Thanks to our amazing team!  Read the full report: link.com/q4-results ",
+    "processing_time": 0.08,
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### Mixed Content with Symbols
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/remove-emoji' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "post_content": "Price: $299 💰 | Discount: 20% off 🏷️ | Available: Mon-Fri 9-5 🕘 | Contact: support@company.com 📧"
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_5544332211",
+    "operation": "remove_emoji",
+    "original_content": "Price: $299 💰 | Discount: 20% off 🏷️ | Available: Mon-Fri 9-5 🕘 | Contact: support@company.com 📧",
+    "edited_content": "Price: $299  | Discount: 20% off  | Available: Mon-Fri 9-5  | Contact: support@company.com ",
+    "processing_time": 0.05,
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+## How It Works
+
+<Steps>
+<Step title="Parse Content">
+    The system analyzes the input text to identify all Unicode emoji characters, including standard emojis, symbols, and pictographs.
+    
+    <Info>
+    The algorithm recognizes standard Unicode emoji ranges and removes all character types that fall within these ranges.
+    </Info>
+</Step>
+
+<Step title="Remove Emojis">
+    All identified emoji characters are removed while preserving text, numbers, punctuation, and standard symbols (like $, %, @).
+    
+    <Tip>
+    Important text elements like URLs, email addresses, hashtags, and mentions are preserved intact.
+    </Tip>
+</Step>
+
+<Step title="Clean Formatting">
+    Extra spaces that may result from emoji removal are handled, though some spacing irregularities may remain.
+    
+    <Note>
+    The system preserves original text structure and line breaks while removing only emoji characters.
+    </Note>
+</Step>
+
+<Step title="Return Cleaned Text">
+    The cleaned content is returned with original and edited versions for comparison.
+</Step>
+</Steps>
+
+## What Gets Removed
+
+<Tabs>
+<Tab title="Standard Emojis">
+**Facial expressions and gestures:**
+- 😀 😃 😄 😁 😆 🥹 😅 😂 🤣
+- 👍 👎 👌 ✌️ 🤞 🤟 🤘 🤙
+- All standard emoji faces and hand gestures
+</Tab>
+
+<Tab title="Objects & Symbols">
+**Objects, activities, and symbols:**
+- 🚀 ✨ 💡 📱 💼 🏆 🎉 🌟
+- 📈 📊 💰 🏷️ 📧 🕘 📝 🔗
+- All emoji objects, vehicles, and activity symbols
+</Tab>
+
+<Tab title="Nature & Animals">
+**Animals, plants, and nature emojis:**
+- 🐶 🐱 🦁 🐸 🦋 🌱 🌸 🌈
+- 🌞 🌙 ⭐ 🔥 💧 🌍 🏔️ 🌊
+- All animal, plant, and weather emojis
+</Tab>
+</Tabs>
+
+## What Gets Preserved
+
+<Check>
+**Text and standard characters are preserved:**
+- Letters, numbers, punctuation
+- URLs and email addresses  
+- Hashtags and mentions (@, #)
+- Currency symbols ($, €, £)
+- Mathematical operators (+, -, *, /)
+- Standard punctuation (., !, ?, :, ;)
+</Check>
+
+## Error Handling
+
+<ResponseExample>
+```json Error Response
+{
+    "id": "edit_error_789",
+    "operation": "remove_emoji",
+    "status": "failed",
+    "error": "Post content is required for emoji removal",
+    "processing_time": 0.02,
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### Common Errors
+
+<AccordionGroup>
+<Accordion title="Missing Post Content">
+**Error:** "Post content is required for emoji removal"
+
+**Solution:** Include the `post_content` parameter with the text you want to clean. This field is mandatory for the operation.
+</Accordion>
+
+<Accordion title="Empty Content">
+**Error:** "Post content cannot be empty"
+
+**Solution:** Ensure the `post_content` field contains actual text content, not an empty string or just whitespace.
+</Accordion>
+
+<Accordion title="Processing Error">
+**Error:** "Failed to process content for emoji removal"
+
+**Solution:** This is typically a temporary issue. Retry the request. If the problem persists, check for unusual characters in your content.
+</Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+### Professional Communication
+Transform casual social media content for formal business communications.
+
+```json
+Input: "Great meeting today! 😊 Looking forward to the next steps! 🚀"
+Output: "Great meeting today!  Looking forward to the next steps! "
+```
+
+### Email Marketing
+Clean social media content for email campaigns where emojis may not render properly.
+
+### Platform Migration
+Adapt content from emoji-friendly platforms (Instagram, Twitter) to more formal platforms (LinkedIn newsletters, press releases).
+
+### Accessibility
+Create emoji-free versions for screen readers and accessibility compliance.
+
+### International Audiences
+Remove culture-specific emojis that might not translate well across different regions.
+
+## Best Practices
+
+### Content Review
+<Tip>
+Always review the cleaned content before using it, as emoji removal may create spacing issues or affect readability.
+</Tip>
+
+- **Check spacing** - Multiple consecutive emojis may leave extra spaces
+- **Review flow** - Ensure the text still reads naturally without emojis
+- **Verify meaning** - Confirm that essential meaning isn't lost with emoji removal
+
+### Workflow Integration
+
+**Pre-processing steps:**
+1. Save original content as backup
+2. Apply emoji removal
+3. Review and manually adjust if needed
+4. Use cleaned content for target platform
+
+**Quality checks:**
+- Ensure URLs and links remain intact
+- Verify hashtags and mentions are preserved
+- Check for any unintended character removal
+
+### Platform-Specific Considerations
+
+<Tabs>
+<Tab title="Email Marketing">
+- Remove emojis to ensure consistent rendering across email clients
+- Focus on text-based calls-to-action
+- Use bullet points instead of emoji lists
+</Tab>
+
+<Tab title="Press Releases">
+- Professional tone requires emoji-free content
+- Maintain formal business language standards
+- Preserve quotes and attribution formatting
+</Tab>
+
+<Tab title="Documentation">
+- Clean technical content of casual emojis
+- Preserve code examples and technical symbols
+- Maintain professional documentation standards
+</Tab>
+</Tabs>
+
+### Performance Optimization
+
+- **Batch processing** - Process multiple posts in sequence for efficiency
+- **Caching** - Cache cleaned versions of frequently used content
+- **Automation** - Integrate into content workflow tools for seamless processing
+
+<CardGroup cols={2}>
+<Card title="Remove Hashtag" icon="hashtag" href="/api-reference/post-edit/remove-hashtag">
+    Clean text content by removing hashtag characters
+</Card>
+
+<Card title="Regenerate Caption" icon="pen" href="/api-reference/post-edit/regenerate-caption">
+    Generate new caption variations with AI
+</Card>
+</CardGroup> 

@@ -1,0 +1,307 @@
+---
+title: 'Regenerate Image'
+description: 'Generate new images using the latest image prompt from conversation thread context'
+---
+
+## Overview
+
+The regenerate image endpoint creates new images based on the latest image generation prompt found in a conversation thread. This allows you to create variations of images without having to provide the prompt again.
+
+<Info>
+This endpoint requires frontend role authentication and a valid thread ID containing image generation history.
+</Info>
+
+## Endpoint
+
+**POST** `/api/v1/post-edit/regenerate-image`
+
+## Authentication
+
+<Warning>
+Requires frontend role authentication. Include your bearer token in the Authorization header.
+</Warning>
+
+## Request Parameters
+
+<ParamField body="thread_id" type="string" required>
+Thread ID for conversation context. **Required** to locate the original image prompt and generation parameters.
+</ParamField>
+
+<ParamField body="session_id" type="string">
+Session identifier for request tracking and analytics
+</ParamField>
+
+<ParamField body="track_id" type="string">
+Track identifier for request correlation across systems
+</ParamField>
+
+<Warning>
+The `thread_id` parameter is required. The endpoint will search through the conversation history to find the most recent image generation prompt and use it to create a new image variation.
+</Warning>
+
+## Response
+
+<ResponseField name="id" type="string">
+Unique identifier for the post edit result
+</ResponseField>
+
+<ResponseField name="operation" type="string">
+Always returns `regeneration_image` for this endpoint
+</ResponseField>
+
+<ResponseField name="original_prompt" type="string">
+The original image generation prompt found in the conversation thread
+</ResponseField>
+
+<ResponseField name="original_image" type="string">
+URL of the original image that was previously generated
+</ResponseField>
+
+<ResponseField name="edited_image" type="string">
+URL of the newly generated image variation
+</ResponseField>
+
+<ResponseField name="processing_time" type="number">
+Time taken to process the image regeneration in seconds (typically 5-15 seconds)
+</ResponseField>
+
+<ResponseField name="thread_id" type="string">
+Thread ID used for conversation context
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Operation status: `success` or `failed`
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if the operation failed (only present when status is `failed`)
+</ResponseField>
+
+<ResponseField name="created_at" type="number">
+Unix timestamp when the edit result was created
+</ResponseField>
+
+## Examples
+
+### Basic Image Regeneration
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/regenerate-image' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "thread_id": "thread-abc123"
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_9876543210",
+    "operation": "regeneration_image",
+    "original_prompt": "A modern office with diverse team collaborating on AI project, bright lighting, professional atmosphere, technology visible",
+    "original_image": "https://storage.postreach.ai/images/original_img_123.jpg",
+    "edited_image": "https://storage.postreach.ai/images/regenerated_img_456.jpg",
+    "processing_time": 8.67,
+    "thread_id": "thread-abc123",
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### With Session Tracking
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/regenerate-image' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "thread_id": "thread-xyz789",
+        "session_id": "session_12345",
+        "track_id": "track_67890"
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_1122334455",
+    "operation": "regeneration_image",
+    "original_prompt": "Social media post image showing happy customers using our product, lifestyle photography, warm colors",
+    "original_image": "https://storage.postreach.ai/images/lifestyle_001.jpg",
+    "edited_image": "https://storage.postreach.ai/images/lifestyle_variation_002.jpg",
+    "processing_time": 12.34,
+    "thread_id": "thread-xyz789",
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+## How It Works
+
+<Steps>
+<Step title="Locate Image Prompt">
+    The system searches through the conversation thread to find the most recent image generation prompt and associated parameters.
+    
+    <Tip>
+    The endpoint looks for prompts used in previous image generations within the same thread, ensuring consistency with your original vision.
+    </Tip>
+</Step>
+
+<Step title="Extract Generation Parameters">
+    Original image generation settings (dimensions, style, seed values) are retrieved to maintain consistency while creating variation.
+    
+    <Info>
+    The system automatically handles image dimensions, aspect ratios, and other technical parameters from the original request.
+    </Info>
+</Step>
+
+<Step title="Generate New Image">
+    A new image is created using the same prompt but with a different seed value, producing a variation of the original concept.
+    
+    <Check>
+    Images are automatically optimized for social media platforms and stored securely in cloud storage.
+    </Check>
+</Step>
+
+<Step title="Store and Return URLs">
+    Both original and newly generated image URLs are returned for comparison and selection.
+</Step>
+</Steps>
+
+## Image Specifications
+
+<Tabs>
+<Tab title="Default Settings">
+**Automatic optimization based on original image:**
+- Maintains original dimensions and aspect ratio
+- Optimized for social media platforms
+- High-quality JPEG format
+- Secure cloud storage with CDN delivery
+</Tab>
+
+<Tab title="Storage">
+**Image hosting:**
+- Secure cloud storage (Supabase)
+- CDN-delivered for fast loading
+- HTTPS URLs for secure access
+- Persistent storage (images don't expire)
+</Tab>
+
+<Tab title="Quality">
+**Image quality standards:**
+- High resolution suitable for social media
+- Compressed for web optimization
+- Color accuracy maintained
+- Professional quality output
+</Tab>
+</Tabs>
+
+## Error Handling
+
+<ResponseExample>
+```json Error Response
+{
+    "id": "edit_error_456",
+    "operation": "regeneration_image",
+    "status": "failed",
+    "error": "No image prompt found in conversation thread",
+    "processing_time": 0.12,
+    "thread_id": "thread-invalid123",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### Common Errors
+
+<AccordionGroup>
+<Accordion title="Missing Thread ID">
+**Error:** "Thread ID is required for image regeneration"
+
+**Solution:** Ensure you include the `thread_id` parameter in your request. This is mandatory for the endpoint to locate the original image prompt.
+</Accordion>
+
+<Accordion title="No Image Prompt Found">
+**Error:** "No image prompt found in conversation thread"
+
+**Solution:** The thread must contain at least one previous image generation request. Use a thread that has generated images before, or create images first using the chatbot endpoint.
+</Accordion>
+
+<Accordion title="Invalid Thread">
+**Error:** "Thread not found or no content available"
+
+**Solution:** Verify the thread_id exists and has accessible conversation history. The thread must be associated with your account.
+</Accordion>
+
+<Accordion title="Generation Service Error">
+**Error:** "Error generating image: [technical details]"
+
+**Solution:** This indicates a temporary issue with the image generation service. Wait a moment and retry the request. If the issue persists, contact support.
+</Accordion>
+</AccordionGroup>
+
+## Processing Time
+
+<Info>
+Image generation typically takes 5-15 seconds depending on:
+- Image complexity and dimensions
+- Current system load
+- Generation queue length
+</Info>
+
+**Typical processing times:**
+- Simple images: 5-8 seconds
+- Complex scenes: 8-12 seconds
+- High-resolution images: 10-15 seconds
+
+<Tip>
+For user experience optimization, consider implementing a loading state in your application during image generation.
+</Tip>
+
+## Use Cases
+
+### Content Variation
+Generate multiple versions of the same concept for A/B testing or different platforms.
+
+### Creative Exploration
+Explore different interpretations of your original image concept without rewriting prompts.
+
+### Backup Options
+Create alternative images when you need multiple options for the same post.
+
+### Consistency Maintenance
+Generate images that maintain visual consistency with your established brand aesthetic.
+
+## Best Practices
+
+### Thread Management
+- **Keep conversations focused** - Use dedicated threads for image generation sessions
+- **Document image prompts** - Save successful prompts for future reference
+- **Organize by project** - Use separate threads for different campaigns or content types
+
+### Workflow Integration
+- **Generate original first** - Always create an initial image before using regeneration
+- **Review conversation history** - Ensure the thread contains the image prompt you want to reuse
+- **Plan for processing time** - Account for 5-15 second generation time in your workflow
+
+### Quality Control
+- **Compare variations** - Review both original and regenerated images before selection
+- **Test across platforms** - Verify images work well across different social media platforms
+- **Maintain brand consistency** - Ensure regenerated images align with your brand guidelines
+
+<CardGroup cols={2}>
+<Card title="Regenerate Caption" icon="pen" href="/api-reference/post-edit/regenerate-caption">
+    Generate new caption variations with AI
+</Card>
+
+<Card title="Remove Hashtag" icon="hashtag" href="/api-reference/post-edit/remove-hashtag">
+    Clean text content by removing hashtag characters
+</Card>
+</CardGroup> 

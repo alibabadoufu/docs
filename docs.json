@@ -58,6 +58,15 @@
             ]
           },
           {
+            "group": "Post Editing",
+            "pages": [
+              "api-reference/post-edit/regenerate-caption",
+              "api-reference/post-edit/regenerate-image",
+              "api-reference/post-edit/remove-emoji",
+              "api-reference/post-edit/remove-hashtag"
+            ]
+          },
+          {
             "group": "Website Analysis",
             "pages": [
               "api-reference/website/analyze"

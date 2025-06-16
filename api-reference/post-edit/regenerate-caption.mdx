@@ -1,0 +1,292 @@
+---
+title: 'Regenerate Caption'
+description: 'Generate new caption variations using conversation context and user preferences'
+---
+
+## Overview
+
+The regenerate caption endpoint creates new caption variations based on conversation context or existing content. It leverages AI to understand user preferences and conversation history to generate more engaging and targeted captions.
+
+<Info>
+This endpoint requires frontend role authentication and supports both thread-based context and direct post content input.
+</Info>
+
+## Endpoint
+
+**POST** `/api/v1/post-edit/regenerate-caption`
+
+## Authentication
+
+<Warning>
+Requires frontend role authentication. Include your bearer token in the Authorization header.
+</Warning>
+
+## Request Parameters
+
+<ParamField body="post_content" type="string">
+The post content to edit. Use this when you want to regenerate a caption without conversation context.
+</ParamField>
+
+<ParamField body="thread_id" type="string">
+Thread ID for conversation context. **Recommended** for better results as it provides full conversation history.
+</ParamField>
+
+<ParamField body="user_preferences" type="string">
+User preferences for caption regeneration. Specify tone, style, target audience, platform requirements, etc.
+
+**Examples:**
+- "Professional tone for LinkedIn audience, include call-to-action"
+- "Casual and engaging for Instagram, use emojis, target young professionals"
+- "Formal business communication, no hashtags, B2B focused"
+</ParamField>
+
+<ParamField body="number_of_messages" type="integer" default="10">
+Number of latest messages to use for context when regenerating captions. Range: 1-50.
+</ParamField>
+
+<ParamField body="length_of_caption" type="integer" default="300">
+Desired length of the regenerated caption in characters. Range: 50-1000.
+</ParamField>
+
+<ParamField body="session_id" type="string">
+Session identifier for request tracking and analytics
+</ParamField>
+
+<ParamField body="track_id" type="string">
+Track identifier for request correlation across systems
+</ParamField>
+
+<Note>
+Either `post_content` or `thread_id` must be provided. For best results, use `thread_id` to leverage full conversation context.
+</Note>
+
+## Response
+
+<ResponseField name="id" type="string">
+Unique identifier for the post edit result
+</ResponseField>
+
+<ResponseField name="operation" type="string">
+Always returns `regenerate_caption` for this endpoint
+</ResponseField>
+
+<ResponseField name="original_content" type="string">
+The original post content before editing
+</ResponseField>
+
+<ResponseField name="edited_content" type="string">
+The newly generated caption content
+</ResponseField>
+
+<ResponseField name="processing_time" type="number">
+Time taken to process the caption regeneration in seconds
+</ResponseField>
+
+<ResponseField name="thread_id" type="string">
+Thread ID used for conversation context (if provided)
+</ResponseField>
+
+<ResponseField name="agent_id" type="string">
+AI agent identifier used for caption generation
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Operation status: `success` or `failed`
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if the operation failed (only present when status is `failed`)
+</ResponseField>
+
+<ResponseField name="created_at" type="number">
+Unix timestamp when the edit result was created
+</ResponseField>
+
+## Examples
+
+### Using Thread Context (Recommended)
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/regenerate-caption' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "thread_id": "thread-abc123",
+        "user_preferences": "Make it more professional and engaging for LinkedIn audience, include call-to-action",
+        "number_of_messages": 5,
+        "length_of_caption": 250
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_6789012345",
+    "operation": "regenerate_caption",
+    "original_content": "Just launched our new AI product! 🚀 Super excited!",
+    "edited_content": "We're thrilled to announce the launch of our groundbreaking AI solution that transforms how businesses approach automation. This represents months of dedicated development and innovation from our talented team. Ready to revolutionize your workflow? Learn more about our AI platform and schedule a demo today.",
+    "processing_time": 2.34,
+    "thread_id": "thread-abc123",
+    "agent_id": "caption-agent-v2",
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### Using Direct Post Content
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post-edit/regenerate-caption' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer YOUR_API_KEY' \
+    -d '{
+        "post_content": "Check out our new feature! It saves you time.",
+        "user_preferences": "Casual tone for Twitter, use emojis, focus on time-saving benefits",
+        "length_of_caption": 180
+    }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+    "id": "edit_9876543210",
+    "operation": "regenerate_caption",
+    "original_content": "Check out our new feature! It saves you time.",
+    "edited_content": "⏰ Time is precious! Our latest feature is designed to give you hours back in your day. Stop wasting time on manual tasks and let automation do the heavy lifting. Try it now and see the difference! ⚡️ #productivity #timemanagement",
+    "processing_time": 1.89,
+    "agent_id": "caption-agent-v2",
+    "status": "success",
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+## How It Works
+
+<Steps>
+<Step title="Analyze Context">
+    The AI analyzes either the conversation thread or provided post content to understand the context and intent.
+    
+    <Tip>
+    Using `thread_id` provides richer context from the entire conversation, leading to more coherent and relevant captions.
+    </Tip>
+</Step>
+
+<Step title="Apply Preferences">
+    User preferences are interpreted to guide tone, style, audience targeting, and platform-specific requirements.
+    
+    **Effective preference examples:**
+    - Platform-specific: "Instagram-style with hashtags and emojis"
+    - Audience-focused: "Professional tone for C-level executives"
+    - Action-oriented: "Include strong call-to-action for lead generation"
+</Step>
+
+<Step title="Generate Variations">
+    The AI creates new caption variations that maintain the core message while adapting to your specified requirements.
+</Step>
+
+<Step title="Optimize Length">
+    Content is optimized to fit within the specified character limit while preserving key messaging.
+</Step>
+</Steps>
+
+## Error Handling
+
+<ResponseExample>
+```json Error Response
+{
+    "id": "edit_error_123",
+    "operation": "regenerate_caption",
+    "status": "failed",
+    "error": "Either post_content or thread_id must be provided",
+    "processing_time": 0.05,
+    "created_at": 1704067200
+}
+```
+</ResponseExample>
+
+### Common Errors
+
+<AccordionGroup>
+<Accordion title="Missing Input Data">
+**Error:** "Either post_content or thread_id must be provided"
+
+**Solution:** Include either `post_content` with the text you want to regenerate, or `thread_id` to use conversation context.
+</Accordion>
+
+<Accordion title="Invalid Thread ID">
+**Error:** "Thread not found or no content available"
+
+**Solution:** Verify the thread_id exists and contains message content that can be used for caption generation.
+</Accordion>
+
+<Accordion title="Processing Timeout">
+**Error:** "Caption generation timed out"
+
+**Solution:** Try reducing the `length_of_caption` or `number_of_messages` parameters, then retry the request.
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+### Writing Effective User Preferences
+
+<Tip>
+Be specific about your requirements: "Professional LinkedIn post for B2B SaaS audience, include metrics if available, end with clear call-to-action for demo booking"
+</Tip>
+
+**Good examples:**
+- "Casual Instagram style with 2-3 relevant hashtags and emojis, focus on lifestyle benefits"
+- "Formal business tone for LinkedIn, target marketing professionals, include industry insights"
+- "Twitter thread starter, engaging hook, under 240 characters, encourage engagement"
+
+**Avoid vague preferences:**
+- "Make it better"
+- "More professional"
+- "Add some hashtags"
+
+### Optimizing Context Usage
+
+- **Use thread_id when available** - Provides better context and coherence
+- **Limit `number_of_messages`** - 3-10 messages usually provide optimal context without noise
+- **Set appropriate length** - Consider platform limits (Twitter: 280, LinkedIn: 3000, Instagram: 2200)
+
+### Platform-Specific Considerations
+
+<Tabs>
+<Tab title="LinkedIn">
+**Recommended settings:**
+- Length: 300-1000 characters
+- Preferences: "Professional tone, industry insights, clear call-to-action"
+- Include: Metrics, business value, thought leadership
+</Tab>
+
+<Tab title="Twitter">
+**Recommended settings:**
+- Length: 220-270 characters (allows for retweets)
+- Preferences: "Concise, engaging, encourage replies"
+- Include: Hooks, questions, relevant hashtags
+</Tab>
+
+<Tab title="Instagram">
+**Recommended settings:**
+- Length: 300-1000 characters
+- Preferences: "Visual storytelling, lifestyle focus, community engagement"
+- Include: Emojis, hashtags, personal touch
+</Tab>
+</Tabs>
+
+<CardGroup cols={2}>
+<Card title="Regenerate Image" icon="image" href="/api-reference/post-edit/regenerate-image">
+    Generate new images from conversation context
+</Card>
+
+<Card title="Remove Emoji" icon="face-smile" href="/api-reference/post-edit/remove-emoji">
+    Clean text content by removing emoji characters
+</Card>
+</CardGroup> 
