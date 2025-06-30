@@ -91,6 +91,109 @@
         }
       }
     },
+    "/post/regenerate": {
+      "post": {
+        "tags": ["Pipeline Operations"],
+        "summary": "Regenerate Social Media Posts",
+        "description": "Regenerate existing social media posts with new content, images, or customizations based on post templates",
+        "operationId": "regeneratePosts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegeneratePostsRequest"
+              },
+              "examples": {
+                "basic_regeneration": {
+                  "summary": "Basic Post Regeneration",
+                  "value": {
+                    "post_templates": [
+                      {
+                        "post_id": "post_123abc",
+                        "platform": "facebook",
+                        "post_char_count": 800,
+                        "hashtag_number": 5
+                      }
+                    ]
+                  }
+                },
+                "multi_platform": {
+                  "summary": "Multi-Platform Adaptation",
+                  "value": {
+                    "post_templates": [
+                      {
+                        "post_id": "post_original_456",
+                        "platform": "facebook",
+                        "post_char_count": 1500,
+                        "hashtag_number": 3
+                      },
+                      {
+                        "post_id": "post_original_456",
+                        "platform": "twitter",
+                                               "post_char_count": 280,
+                       "hashtag_number": 2
+                       }
+                     ]
+                  }
+                },
+                "image_regeneration": {
+                  "summary": "Regenerate with New Images",
+                  "value": {
+                    "post_templates": [
+                      {
+                        "post_id": "post_789def",
+                        "platform": "instagram",
+                        "image_generation": {
+                          "regenerate_prompt": true,
+                          "regenerate_image": true
+                        },
+                        "language": "en",
+                        "post_char_count": 2000,
+                        "image_prompt_word_count": 800,
+                        "hashtag_number": 8
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post regeneration initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegeneratePostsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference post not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/pipeline/get_result": {
       "get": {
         "tags": ["Pipeline Operations"],
@@ -846,6 +949,95 @@
             "description": "Timestamp when edit was created"
           }
         }
+      },
+      "RegeneratePostsRequest": {
+        "type": "object",
+        "required": ["post_templates"],
+        "properties": {
+          "post_templates": {
+            "type": "array",
+            "description": "Array of post templates defining which posts to regenerate and how to customize them",
+            "items": {
+              "type": "object",
+              "required": ["post_id", "platform"],
+              "properties": {
+                "post_id": {
+                  "type": "string",
+                  "description": "ID of the existing post to use as reference for regeneration"
+                },
+                "platform": {
+                  "type": "string",
+                  "enum": ["facebook", "instagram", "twitter", "linkedin"],
+                  "description": "Target platform for the regenerated post"
+                },
+                "image_generation": {
+                  "type": "object",
+                  "description": "Controls image regeneration behavior",
+                  "properties": {
+                    "regenerate_prompt": {
+                      "type": "boolean",
+                      "default": false,
+                      "description": "Whether to generate a new image prompt based on the post content"
+                    },
+                    "regenerate_image": {
+                      "type": "boolean",
+                      "default": false,
+                      "description": "Whether to generate a new image using the prompt"
+                    }
+                  },
+                  "default": {"regenerate_prompt": false, "regenerate_image": false}
+                },
+                "language": {
+                  "type": "string",
+                  "description": "Target language for the regenerated content"
+                },
+                "social_task_version": {
+                  "type": "integer",
+                  "description": "Version of the social media generation task to use"
+                },
+                "hashtag_number": {
+                  "type": "integer",
+                  "description": "Number of hashtags to include in the regenerated post"
+                },
+                "post_char_count": {
+                  "type": "integer",
+                  "default": 1000,
+                  "description": "Maximum character count for the regenerated post content"
+                },
+                "image_prompt_generation_task_version": {
+                  "type": "integer",
+                  "default": 1,
+                  "description": "Version of the image prompt generation task to use"
+                },
+                "image_prompt_word_count": {
+                  "type": "integer",
+                  "default": 1000,
+                  "description": "Word count for image prompt generation"
+                },
+                "schedule_start_date": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Start date for post scheduling in ISO 8601 format"
+                },
+                "schedule_end_date": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "End date for post scheduling in ISO 8601 format"
+                }
+              }
+            }
+                     },
+           "is_dummy": {
+            "type": "boolean",
+            "default": false,
+            "description": "Generate dummy posts for testing purposes instead of real content"
+          }
+        }
+      },
+      "RegeneratePostsResponse": {
+        "allOf": [
+          {"$ref": "#/components/schemas/PipelineResponse"}
+        ]
       }
     }
   },

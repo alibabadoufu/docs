@@ -42,6 +42,7 @@
             "group": "Pipeline Operations",
             "pages": [
               "api-reference/pipeline/generate-posts",
+              "api-reference/pipeline/regenerate-posts",
               "api-reference/pipeline/get-results"
             ]
           },

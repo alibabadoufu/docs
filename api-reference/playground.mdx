@@ -43,6 +43,11 @@ Modify parameters, test different scenarios, and see live responses. All calls a
   Generate social media posts across multiple platforms
 </Card>
 
+<Card title="Regenerate Posts" icon="arrows-rotate" href="#pipeline-regenerate">
+  **POST** `/post/regenerate`<br/>
+  Regenerate existing posts with new content or images
+</Card>
+
 <Card title="Get Results" icon="chart-line" href="#results-get">
   **GET** `/results/{result_id}`<br/>
   Retrieve pipeline generation results
@@ -143,6 +148,94 @@ Test the core pipeline functionality with pre-configured examples:
   "schedule_end_date": "2024-01-29T17:00:00Z",
   "country": "US",
   "language": "en"
+}
+```
+</Tab>
+</Tabs>
+
+### Post Regeneration
+
+Test post regeneration with different customization options:
+
+<Tabs>
+<Tab title="Basic Regeneration">
+```json Example Request
+{
+  "post_templates": [
+    {
+      "post_id": "post_123abc",
+      "platform": "facebook",
+      "post_char_count": 800,
+      "hashtag_number": 5
+    }
+  ]
+}
+```
+</Tab>
+
+<Tab title="Multi-Platform Adaptation">
+```json Example Request
+{
+  "post_templates": [
+    {
+      "post_id": "post_original_456",
+      "platform": "facebook",
+      "post_char_count": 1500,
+      "hashtag_number": 3
+    },
+    {
+      "post_id": "post_original_456",
+      "platform": "twitter", 
+      "post_char_count": 280,
+      "hashtag_number": 2
+    },
+    {
+      "post_id": "post_original_456",
+      "platform": "linkedin",
+      "post_char_count": 2500,
+      "hashtag_number": 4
+    }
+       ]
+}
+```
+</Tab>
+
+<Tab title="Image Regeneration">
+```json Example Request
+{
+  "post_templates": [
+    {
+      "post_id": "post_789def",
+      "platform": "instagram",
+      "image_generation": {
+        "regenerate_prompt": true,
+        "regenerate_image": true
+      },
+      "language": "en",
+      "post_char_count": 2000,
+      "image_prompt_word_count": 800,
+      "hashtag_number": 8
+    }
+  ]
+}
+```
+</Tab>
+
+<Tab title="Scheduled Regeneration">
+```json Example Request
+{
+  "post_templates": [
+    {
+      "post_id": "post_schedule_test",
+      "platform": "linkedin",
+      "post_char_count": 1200,
+      "hashtag_number": 5,
+      "schedule_start_date": "2024-02-01T09:00:00Z",
+      "schedule_end_date": "2024-02-07T18:00:00Z",
+      "social_task_version": 2
+    }
+  ],
+  "is_dummy": true
 }
 ```
 </Tab>
@@ -256,6 +349,17 @@ Test common integration patterns:
 - **Streaming responses**: Real-time chat message streaming
 - **Batch operations**: Multiple sequential API calls
 - **Error recovery**: Implementing retry logic and graceful degradation
+</Accordion>
+
+<Accordion title="Post Regeneration Testing">
+Test regeneration scenarios and edge cases:
+
+- **Reference validation**: Test with valid and invalid post IDs
+- **Platform adaptation**: Regenerate same content for different platforms
+- **Image regeneration**: Test with and without new image generation
+- **Bulk regeneration**: Multiple post templates in single request
+- **Parameter inheritance**: Test parameter inheritance from reference posts
+- **Scheduling conflicts**: Test scheduling with invalid date ranges
 </Accordion>
 </AccordionGroup>
 

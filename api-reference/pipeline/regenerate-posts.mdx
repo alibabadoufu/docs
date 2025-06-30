@@ -1,0 +1,464 @@
+---
+title: 'Regenerate Social Media Posts'
+description: 'Regenerate existing social media posts with new content, images, or customizations based on post templates'
+---
+
+## Overview
+
+The regenerate posts endpoint allows you to create new variations of existing social media posts. This is perfect for creating multiple versions of successful content, updating posts with new information, or adapting content for different audiences while maintaining the original context and user story.
+
+<Info>
+This endpoint supports parallel processing of multiple post templates and includes options for regenerating both text content and images independently.
+</Info>
+
+## Endpoint
+
+**POST** `/api/v1/post/regenerate`
+
+## Authentication
+
+<Warning>
+Requires frontend role authentication. Include your bearer token in the Authorization header.
+</Warning>
+
+## Request Parameters
+
+<ParamField body="post_templates" type="array" required>
+Array of post templates defining which posts to regenerate and how to customize them
+
+<Expandable title="Post Template Structure">
+<ParamField body="post_id" type="string" required>
+ID of the existing post to use as reference for regeneration
+</ParamField>
+
+<ParamField body="platform" type="string" required>
+Target platform for the regenerated post. Options: `facebook`, `instagram`, `twitter`, `linkedin`
+</ParamField>
+
+<ParamField body="image_generation" type="object" default='{"regenerate_prompt": false, "regenerate_image": false}'>
+Controls image regeneration behavior
+
+<Expandable title="Image Generation Options">
+<ParamField body="regenerate_prompt" type="boolean" default="false">
+Whether to generate a new image prompt based on the post content
+</ParamField>
+
+<ParamField body="regenerate_image" type="boolean" default="false">
+Whether to generate a new image using the prompt (requires regenerate_prompt=true or uses existing prompt)
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="language" type="string">
+Target language for the regenerated content. If not specified, uses the language from the reference post
+</ParamField>
+
+<ParamField body="social_task_version" type="integer">
+Version of the social media generation task to use. If not specified, uses the version from the reference post
+</ParamField>
+
+<ParamField body="hashtag_number" type="integer">
+Number of hashtags to include in the regenerated post. If not specified, uses the setting from the reference post
+</ParamField>
+
+<ParamField body="post_char_count" type="integer" default="1000">
+Maximum character count for the regenerated post content
+</ParamField>
+
+<ParamField body="image_prompt_generation_task_version" type="integer" default="1">
+Version of the image prompt generation task to use
+</ParamField>
+
+<ParamField body="image_prompt_word_count" type="integer" default="1000">
+Word count for image prompt generation
+</ParamField>
+
+<ParamField body="schedule_start_date" type="string">
+Start date for post scheduling in ISO 8601 format (e.g., "2024-01-20T10:00:00Z")
+</ParamField>
+
+<ParamField body="schedule_end_date" type="string">
+End date for post scheduling in ISO 8601 format
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="is_dummy" type="boolean" default="false">
+Generate dummy posts for testing purposes instead of real content
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="string">
+Unique identifier for the regeneration operation
+</ResponseField>
+
+<ResponseField name="result_id" type="string">
+Identifier for accessing the regeneration results
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Current processing status: `processing`, `success`, `failed`
+</ResponseField>
+
+<ResponseField name="posts" type="array">
+Array of regenerated social media posts
+
+<Expandable title="Post Structure">
+<ResponseField name="id" type="string">
+Unique post identifier
+</ResponseField>
+
+<ResponseField name="platform" type="string">
+Target platform: `facebook`, `instagram`, `twitter`, `linkedin`
+</ResponseField>
+
+<ResponseField name="language" type="string">
+Language of the generated content
+</ResponseField>
+
+<ResponseField name="text" type="string">
+Generated post content/caption
+</ResponseField>
+
+<ResponseField name="hashtags" type="array">
+Array of relevant hashtags
+</ResponseField>
+
+<ResponseField name="image_url" type="string">
+URL to the generated or reference image
+</ResponseField>
+
+<ResponseField name="image_prompt" type="string">
+Prompt used for image generation
+</ResponseField>
+
+<ResponseField name="context" type="string">
+Context information used for post generation
+</ResponseField>
+
+<ResponseField name="user_story" type="string">
+Original user story from the reference post
+</ResponseField>
+
+<ResponseField name="post_time" type="string">
+Scheduled posting time (if provided)
+</ResponseField>
+
+<ResponseField name="social_task_version" type="integer">
+Version of the social task used for generation
+</ResponseField>
+
+<ResponseField name="post_char_count" type="integer">
+Character count limit applied to the post
+</ResponseField>
+
+<ResponseField name="hashtag_number" type="integer">
+Number of hashtags included in the post
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+ISO 8601 timestamp when the post was created
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+ISO 8601 timestamp when the post was last updated
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+<ResponseField name="execution_time" type="number">
+Total processing time in seconds
+</ResponseField>
+
+<ResponseField name="completed_at" type="string">
+ISO 8601 timestamp when processing completed
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+ISO 8601 timestamp when the regeneration was initiated
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+ISO 8601 timestamp when the regeneration was last updated
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if regeneration failed
+</ResponseField>
+
+## Examples
+
+### Basic Post Regeneration
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post/regenerate' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -d '{
+    "post_templates": [
+      {
+        "post_id": "post_123abc",
+        "platform": "facebook",
+        "post_char_count": 800,
+        "hashtag_number": 5
+      }
+    ]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "id": "post-regeneration-456def",
+  "result_id": "post-regeneration-result-456def",
+  "status": "processing",
+  "posts": [],
+  "execution_time": 2.1,
+  "created_at": "2024-01-15T14:30:00Z",
+  "updated_at": "2024-01-15T14:30:00Z"
+}
+```
+</ResponseExample>
+
+### Regenerate with New Images
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post/regenerate' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -d '{
+    "post_templates": [
+      {
+        "post_id": "post_789ghi",
+        "platform": "instagram",
+        "image_generation": {
+          "regenerate_prompt": true,
+          "regenerate_image": true
+        },
+        "language": "es",
+        "post_char_count": 2000,
+        "image_prompt_word_count": 800
+      }
+    ]
+  }'
+```
+</RequestExample>
+
+### Bulk Regeneration for Multiple Platforms
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/post/regenerate' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -d '{
+    "post_templates": [
+      {
+        "post_id": "post_original",
+        "platform": "facebook",
+        "post_char_count": 1500,
+        "hashtag_number": 3
+      },
+      {
+        "post_id": "post_original",
+        "platform": "twitter",
+        "post_char_count": 280,
+        "hashtag_number": 2
+      },
+      {
+        "post_id": "post_original",
+        "platform": "linkedin",
+        "post_char_count": 2500,
+        "hashtag_number": 4
+      }
+         ]
+  }'
+```
+</RequestExample>
+
+### Completed Regeneration Response
+
+<ResponseExample>
+```json Completed Response
+{
+  "id": "post-regeneration-completed-789",
+  "result_id": "post-regeneration-result-completed-789",
+  "status": "success",
+  "posts": [
+    {
+      "id": "regenerated_post_001",
+      "platform": "facebook",
+      "language": "en",
+      "text": "🚀 Exciting news! Our latest AI breakthrough is transforming how businesses create content. Experience the future of marketing automation with intelligent post generation. Ready to revolutionize your social media strategy?",
+      "hashtags": ["#AI", "#Marketing", "#Innovation", "#ContentCreation", "#BusinessGrowth"],
+      "image_url": "https://images.postreach.ai/regenerated/img_001.jpg",
+      "image_prompt": "Modern office with AI technology displays, vibrant colors, professional team collaboration",
+      "context": "Technology announcement for business audience",
+      "user_story": "Company launching AI-powered marketing platform",
+      "post_time": null,
+      "social_task_version": 2,
+      "post_char_count": 800,
+      "hashtag_number": 5,
+      "created_at": "2024-01-15T14:32:15Z",
+      "updated_at": "2024-01-15T14:32:15Z"
+    }
+  ],
+  "execution_time": 23.4,
+  "completed_at": "2024-01-15T14:32:15Z",
+  "created_at": "2024-01-15T14:30:00Z",
+  "updated_at": "2024-01-15T14:32:15Z"
+}
+```
+</ResponseExample>
+
+## Error Handling
+
+<Warning>
+Post regeneration can fail at various stages. Always check the `status` field and handle errors appropriately.
+</Warning>
+
+### Common Error Scenarios
+
+<AccordionGroup>
+<Accordion title="Invalid Post ID">
+```json
+{
+  "id": "post-regeneration-error-001",
+  "result_id": "post-regeneration-result-error-001",
+  "status": "failed",
+  "error": "Post with ID 'invalid_post_123' not found",
+  "posts": [],
+  "execution_time": 0.05
+}
+```
+</Accordion>
+
+<Accordion title="Invalid Platform">
+```json
+{
+  "id": "post-regeneration-error-002",
+  "result_id": "post-regeneration-result-error-002", 
+  "status": "failed",
+  "error": "Invalid platform 'tiktok'. Must be one of: facebook, instagram, twitter, linkedin",
+  "posts": [],
+  "execution_time": 0.08
+}
+```
+</Accordion>
+
+<Accordion title="Image Generation Failure">
+```json
+{
+  "id": "post-regeneration-error-003",
+  "result_id": "post-regeneration-result-error-003",
+  "status": "failed", 
+  "error": "Failed to generate image: Image generation service unavailable",
+  "posts": [],
+  "execution_time": 15.2
+}
+```
+</Accordion>
+
+<Accordion title="Empty Post Templates">
+```json
+{
+  "id": "post-regeneration-error-004",
+  "result_id": "post-regeneration-result-error-004",
+  "status": "failed",
+  "error": "No post templates provided",
+  "posts": [],
+  "execution_time": 0.02
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Tip>
+**Performance Optimization**: The endpoint processes multiple post templates in parallel (up to 4 concurrent operations). Group your regeneration requests to take advantage of this parallelization.
+</Tip>
+
+<Steps>
+<Step title="Choose Reference Posts Wisely">
+Select high-performing or well-structured posts as references to ensure quality regenerated content.
+
+<Check>
+Verify the reference post has complete information including user story and context.
+</Check>
+</Step>
+
+<Step title="Customize for Platform">
+Adjust character counts and hashtag numbers appropriately for each platform's best practices.
+
+<Note>
+Twitter: 280 chars max, LinkedIn: 3000 chars recommended, Instagram: 2200 chars max, Facebook: 2000 chars optimal
+</Note>
+</Step>
+
+<Step title="Control Image Generation">
+Use image regeneration strategically - generating new images takes additional time (5-15 seconds per image).
+
+```json
+{
+  "image_generation": {
+    "regenerate_prompt": true,
+    "regenerate_image": false
+  }
+}
+```
+</Step>
+
+<Step title="Monitor Processing Status">
+Use the `result_id` to check completion status for long-running regenerations.
+
+```bash
+curl -X GET 'https://api.postreach.ai/api/v1/results/post-regeneration-result-456def' \
+  -H 'Authorization: Bearer YOUR_API_KEY'
+```
+</Step>
+</Steps>
+
+## Use Cases
+
+<CardGroup cols={2}>
+<Card title="A/B Testing" icon="flask">
+Generate multiple variations of successful posts to test different messaging approaches
+</Card>
+
+<Card title="Platform Adaptation" icon="arrows-split-up-and-left">
+Adapt existing content for different social media platforms with optimal formatting
+</Card>
+
+<Card title="Content Refresh" icon="arrow-rotate-right">
+Update older posts with new information while maintaining the original context and appeal
+</Card>
+
+<Card title="Multilingual Content" icon="globe">
+Create localized versions of posts in different languages for global audiences
+</Card>
+</CardGroup>
+
+## Related Endpoints
+
+<CardGroup cols={2}>
+<Card title="Generate Posts" icon="wand-magic-sparkles" href="/api-reference/pipeline/generate-posts">
+  Create new social media posts from scratch using the main pipeline
+</Card>
+
+<Card title="Get Results" icon="chart-line" href="/api-reference/pipeline/get-results">
+  Retrieve the results of completed regeneration operations
+</Card>
+
+<Card title="Edit Posts" icon="pen-to-square" href="/api-reference/post-edit/regenerate-caption">
+  Make targeted edits to existing post content and images
+</Card>
+
+<Card title="Search Posts" icon="magnifying-glass" href="/api-reference/pipeline/search-pipelines">
+  Find existing posts to use as regeneration templates
+</Card>
+</CardGroup> 
