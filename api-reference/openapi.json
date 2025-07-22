@@ -579,6 +579,114 @@
           }
         }
       }
+    },
+    "/color-extraction/extract": {
+      "post": {
+        "tags": ["Image Operations"],
+        "summary": "Extract Colors from Image",
+        "description": "Extract the main colors from an image URL and get the top 3 colors with over 10% coverage, sorted by percentage",
+        "operationId": "extractColors",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ColorExtractionRequest"
+              },
+              "examples": {
+                "brand_logo": {
+                  "summary": "Brand Logo Analysis",
+                  "value": {
+                    "image_url": "https://example.com/brand-logo.png"
+                  }
+                },
+                "product_image": {
+                  "summary": "Product Photography",
+                  "value": {
+                    "image_url": "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Colors extracted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ColorExtractionResponse"
+                },
+                "examples": {
+                  "success_response": {
+                    "summary": "Successful Color Extraction",
+                    "value": {
+                      "image_url": "https://example.com/brand-logo.png",
+                      "colors": [
+                        {
+                          "hex_code": "#1E3A8A",
+                          "rgb": [30, 58, 138],
+                          "percentage": 45.67
+                        },
+                        {
+                          "hex_code": "#F59E0B",
+                          "rgb": [245, 158, 11],
+                          "percentage": 32.14
+                        },
+                        {
+                          "hex_code": "#FFFFFF",
+                          "rgb": [255, 255, 255],
+                          "percentage": 22.19
+                        }
+                      ],
+                      "processing_time": 1.23,
+                      "total_colors_found": 8,
+                      "status": "success",
+                      "error": null,
+                      "created_at": "2024-01-15T14:30:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid image URL or request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ColorExtractionResponse"
+                },
+                "examples": {
+                  "error_response": {
+                    "summary": "Failed Color Extraction",
+                    "value": {
+                      "image_url": "https://invalid-domain.example/nonexistent.jpg",
+                      "colors": [],
+                      "processing_time": 0.45,
+                      "total_colors_found": 0,
+                      "status": "failed",
+                      "error": "Failed to download image from https://invalid-domain.example/nonexistent.jpg: HTTPSConnectionPool(host='invalid-domain.example', port=443): Max retries exceeded",
+                      "created_at": "2024-01-15T14:30:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error during color extraction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1039,6 +1147,97 @@
         "allOf": [
           {"$ref": "#/components/schemas/PipelineResponse"}
         ]
+      },
+      "ColorExtractionRequest": {
+        "type": "object",
+        "required": ["image_url"],
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the image to analyze for color extraction",
+            "example": "https://example.com/brand-logo.png"
+          }
+        }
+      },
+      "ColorInfo": {
+        "type": "object",
+        "required": ["hex_code", "rgb", "percentage"],
+        "properties": {
+          "hex_code": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "description": "Hexadecimal color code (e.g., #FF5733)",
+            "example": "#1E3A8A"
+          },
+          "rgb": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "minItems": 3,
+            "maxItems": 3,
+            "description": "RGB values as an array [R, G, B] where each value is 0-255",
+            "example": [30, 58, 138]
+          },
+          "percentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percentage of the image covered by this color, rounded to 2 decimal places",
+            "example": 45.67
+          }
+        }
+      },
+      "ColorExtractionResponse": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "description": "The original image URL that was analyzed",
+            "example": "https://example.com/brand-logo.png"
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ColorInfo"
+            },
+            "maxItems": 3,
+            "description": "Array of dominant colors found in the image (max 3, only colors with >10% coverage)"
+          },
+          "processing_time": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Time taken to process the image in seconds",
+            "example": 1.23
+          },
+          "total_colors_found": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total number of distinct colors found before filtering by 10% threshold",
+            "example": 8
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "failed"],
+            "description": "Status of the color extraction operation",
+            "example": "success"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "description": "Error message if the operation failed, null if successful",
+            "example": null
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when the color extraction was performed",
+            "example": "2024-01-15T14:30:00Z"
+          }
+        }
       }
     }
   },
@@ -1062,6 +1261,10 @@
     {
       "name": "Post Edit",
       "description": "Post content editing and regeneration"
+    },
+    {
+      "name": "Image Operations",
+      "description": "Image analysis and color extraction tools"
     }
   ]
 } 
