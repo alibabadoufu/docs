@@ -843,6 +843,7 @@
             }
           },
           "website_content": {"type": "string"},
+          "location": {"type": "string", "description": "Geographic location of the website/company"},
           "additional_info": {"type": "object"},
           "processing_time": {"type": "number"},
           "created_at": {"type": "string", "format": "date-time"},

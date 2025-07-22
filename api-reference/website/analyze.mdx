@@ -149,6 +149,10 @@ How prominent this color is on the website (0-100)
 Extracted and cleaned website content
 </ResponseField>
 
+<ResponseField name="location" type="string">
+Geographic location of the website/company extracted from content or IP geolocation
+</ResponseField>
+
 <ResponseField name="additional_info" type="object">
 Additional extracted information based on requested fields
 
@@ -252,6 +256,7 @@ curl -X POST 'https://api.postreach.ai/website/analyze' \
     }
   ],
   "website_content": "OpenAI is an AI research and deployment company. Our mission is to ensure that artificial general intelligence (AGI) benefits all of humanity. We're building safe, beneficial AGI, and we want AGI to be used for the benefit of all people...",
+  "location": "San Francisco, California",
   "additional_info": {},
   "processing_time": 12.7,
   "created_at": "2024-01-15T14:30:00Z"
@@ -325,6 +330,7 @@ curl -X POST 'https://api.postreach.ai/website/analyze' \
     }
   ],
   "website_content": "Shopify is a commerce platform that allows anyone to set up an online store and sell their products. Merchants can also sell their products in person with Shopify POS...",
+  "location": "Ottawa, Canada",
   "additional_info": {
     "social_links": {
       "twitter": "https://twitter.com/shopify",
@@ -414,6 +420,7 @@ curl -X POST 'https://api.postreach.ai/website/analyze' \
   },
   "color_palette": [],
   "website_content": "Example Company software solutions workflow automation productivity...",
+  "location": "Austin, Texas",
   "additional_info": {},
   "processing_time": 8.2,
   "created_at": "2024-01-15T16:00:00Z",
