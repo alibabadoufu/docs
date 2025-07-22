@@ -74,6 +74,12 @@
             ]
           },
           {
+            "group": "Image Operations",
+            "pages": [
+              "api-reference/image/extract-colors"
+            ]
+          },
+          {
             "group": "Interactive Testing",
             "pages": [
               "api-reference/playground"
