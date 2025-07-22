@@ -68,6 +68,11 @@ Modify parameters, test different scenarios, and see live responses. All calls a
   Comprehensive website analysis and data extraction
 </Card>
 
+<Card title="Extract Colors" icon="palette" href="#image-extract-colors">
+  **POST** `/image/extract-colors`<br/>
+  Extract dominant colors from images with percentages
+</Card>
+
 <Card title="Agent Management" icon="robot" href="#agents">
   **CRUD** `/agents/*`<br/>
   Create and manage AI agents
@@ -150,6 +155,108 @@ Test the core pipeline functionality with pre-configured examples:
   "language": "en"
 }
 ```
+</Tab>
+</Tabs>
+
+### Color Extraction
+
+Test color extraction from various image types:
+
+<Tabs>
+<Tab title="Brand Logo Analysis">
+```json Example Request
+{
+  "image_url": "https://example.com/brand-logo.png"
+}
+```
+
+<ResponseExample>
+```json Success Response
+{
+  "image_url": "https://example.com/brand-logo.png",
+  "colors": [
+    {
+      "hex_code": "#1E3A8A",
+      "rgb": [30, 58, 138],
+      "percentage": 45.67
+    },
+    {
+      "hex_code": "#F59E0B",
+      "rgb": [245, 158, 11],
+      "percentage": 32.14
+    },
+    {
+      "hex_code": "#FFFFFF",
+      "rgb": [255, 255, 255],
+      "percentage": 22.19
+    }
+  ],
+  "processing_time": 1.23,
+  "total_colors_found": 8,
+  "status": "success",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+</ResponseExample>
+</Tab>
+
+<Tab title="Product Photography">
+```json Example Request
+{
+  "image_url": "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800"
+}
+```
+
+<ResponseExample>
+```json Success Response
+{
+  "image_url": "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800",
+  "colors": [
+    {
+      "hex_code": "#8B4513",
+      "rgb": [139, 69, 19],
+      "percentage": 38.92
+    },
+    {
+      "hex_code": "#F4E4BC",
+      "rgb": [244, 228, 188],
+      "percentage": 28.47
+    },
+    {
+      "hex_code": "#2F4F4F",
+      "rgb": [47, 79, 79],
+      "percentage": 15.31
+    }
+  ],
+  "processing_time": 2.01,
+  "total_colors_found": 12,
+  "status": "success",
+  "created_at": "2024-01-15T10:31:00Z"
+}
+```
+</ResponseExample>
+</Tab>
+
+<Tab title="Error Handling">
+```json Invalid URL Request
+{
+  "image_url": "https://invalid-domain.example/nonexistent.jpg"
+}
+```
+
+<ResponseExample>
+```json Error Response
+{
+  "image_url": "https://invalid-domain.example/nonexistent.jpg",
+  "colors": [],
+  "processing_time": 0.45,
+  "total_colors_found": 0,
+  "status": "failed",
+  "error": "Failed to download image from https://invalid-domain.example/nonexistent.jpg: HTTPSConnectionPool(host='invalid-domain.example', port=443): Max retries exceeded",
+  "created_at": "2024-01-15T10:32:00Z"
+}
+```
+</ResponseExample>
 </Tab>
 </Tabs>
 
@@ -360,6 +467,19 @@ Test regeneration scenarios and edge cases:
 - **Bulk regeneration**: Multiple post templates in single request
 - **Parameter inheritance**: Test parameter inheritance from reference posts
 - **Scheduling conflicts**: Test scheduling with invalid date ranges
+</Accordion>
+
+<Accordion title="Color Extraction Testing">
+Test color extraction with various image scenarios:
+
+- **Image formats**: Test PNG, JPEG, WebP, and other formats
+- **Image sizes**: Small thumbnails vs. high-resolution images
+- **Color complexity**: Monochrome vs. multi-colored images
+- **Invalid URLs**: Non-existent domains, broken links, non-image content
+- **Edge cases**: Transparent images, gradients, very dark/light images
+- **Performance**: Large file sizes and processing time limits
+- **Caching**: Test repeated requests for the same image URL
+- **Error recovery**: Network timeouts and server errors
 </Accordion>
 </AccordionGroup>
 
