@@ -30,13 +30,6 @@ Generate content from webpage URLs
 Transform quotes into engaging social media posts
 </Tab>
 
-<Tab title="chat2post">
-Interactive chat-based post generation
-</Tab>
-
-<Tab title="chat">
-General purpose conversation mode
-</Tab>
 </Tabs>
 
 ## Request
@@ -45,22 +38,34 @@ General purpose conversation mode
 The user's message to process
 
 <Expandable title="Message Structure">
-<ParamField path="content" type="string" required>
-The text content of the message
+<ParamField path="message.message" type="string" required>
+The text content of the user's message
 </ParamField>
 
-<ParamField path="type" type="string" default="text">
-Message type: `text`, `image`, `url`, `quote`
+<ParamField path="message.attachments[]" type="array">
+List of attachments. Each item requires `type` and `url`.
 </ParamField>
 
-<ParamField path="metadata" type="object">
-Additional metadata for the message (platform preferences, style guides, etc.)
+<ParamField path="message.attachments[].type" type="string">
+Attachment type. One of: `image`, `video`, `audio`, `document`.
+</ParamField>
+
+<ParamField path="message.attachments[].url" type="string">
+Publicly accessible URL of the attachment.
+</ParamField>
+
+<ParamField path="message.metadata" type="object">
+Additional metadata for the message (e.g., platform preferences, style guides).
+</ParamField>
+
+<ParamField path="message.metadata.resume" type="string">
+Confirmation value to resume an interrupted run (e.g., "yes").
 </ParamField>
 </Expandable>
 </ParamField>
 
 <ParamField path="mode" type="string" default="chat">
-Processing mode: `prompt2post`, `image2post`, `url2post`, `quote2post`, `chat2post`, `chat`
+Processing mode. One of: `prompt2post`, `image2post`, `url2post`, `quote2post`.
 </ParamField>
 
 <ParamField path="thread_id" type="string">
@@ -101,16 +106,16 @@ Existing posts for context or comparison
 Platform where the post will be shared
 </ParamField>
 
-<ParamField path="content" type="string">
+<ParamField path="post_content" type="string">
 Post content/caption
 </ParamField>
 
-<ParamField path="image_url" type="string">
+<ParamField path="post_image_url" type="string">
 URL to the post image
 </ParamField>
 
-<ParamField path="engagement_data" type="object">
-Historical engagement metrics
+<ParamField path="post_hashtags" type="array">
+List of hashtags
 </ParamField>
 </Expandable>
 </ParamField>
@@ -154,7 +159,7 @@ Response content blocks
 
 <Expandable title="Content Block Types">
 <ResponseField name="type" type="string">
-Content type: `text`, `image`, `post`, `suggestions`
+Content type: `text`, `image`, `post`, `suggestions`, `tool_use`
 </ResponseField>
 
 <ResponseField name="text" type="string">
@@ -168,6 +173,10 @@ Image URL (for image blocks)
 <ResponseField name="post_data" type="object">
 Generated post data (for post blocks)
 </ResponseField>
+
+<ResponseField name="tool_use" type="object">
+Tool invocation data. When an image generation/edit requires confirmation, a block with `name: "await_confirmation"` is returned and `input` contains the confirmation question.
+</ResponseField>
 </Expandable>
 </ResponseField>
 
@@ -180,25 +189,11 @@ Time taken to process the request in seconds
 </ResponseField>
 
 <ResponseField name="usage" type="object">
-Token usage statistics
-
-<Expandable title="Usage Statistics">
-<ResponseField name="input_tokens" type="integer">
-Number of input tokens processed
-</ResponseField>
-
-<ResponseField name="output_tokens" type="integer">
-Number of output tokens generated
-</ResponseField>
-
-<ResponseField name="total_tokens" type="integer">
-Total token count
-</ResponseField>
-</Expandable>
+Token usage summary for the completed run
 </ResponseField>
 
 <ResponseField name="stop_reason" type="string">
-Reason the response ended: `end_turn`, `max_tokens`, `stop_sequence`
+Reason the response ended: `end_turn`, `max_tokens`, `stop_sequence`, `tool_use`, or `interrupted`.
 </ResponseField>
 
 <ResponseField name="error" type="string">
@@ -207,17 +202,18 @@ Error message if processing failed
 
 ## Examples
 
-### Basic Chat Interaction
+<AccordionGroup>
+<Accordion title="Basic Chat Interaction">
 
 <RequestExample>
 ```bash cURL
-curl -X POST 'https://api.postreach.ai/chatbot/message' \
+curl -X POST 'https://api.postreach.ai/api/v1/chatbot/messages' \
   -H 'Content-Type: application/json' \
   -H 'X-Session-ID: session_123' \
   -d '{
     "message": {
-      "content": "Help me create a LinkedIn post about the benefits of remote work",
-      "type": "text"
+      "message": "Help me create a LinkedIn post about the benefits of remote work",
+      "attachments": []
     },
     "mode": "prompt2post",
     "user_background": {
@@ -269,18 +265,114 @@ curl -X POST 'https://api.postreach.ai/chatbot/message' \
 }
 ```
 </ResponseExample>
+</Accordion>
 
-### URL to Post Generation
+<Accordion title="Image generation confirmation interrupt">
 
 <RequestExample>
 ```bash cURL
-curl -X POST 'https://api.postreach.ai/chatbot/message' \
+curl -X POST 'https://api.postreach.ai/api/v1/chatbot/messages' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "message": {
+      "message": "Create a Facebook post and generate an image about weekend brunch specials"
+    },
+    "mode": "prompt2post",
+    "thread_id": "thread_abc123"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+  "id": "chat_response_901",
+  "thread_id": "thread_abc123",
+  "type": "message",
+  "role": "assistant",
+  "status": "success",
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "chatbot_tool_use_1",
+      "name": "await_confirmation",
+      "input": "I can generate an image for this post. Do you want me to proceed?"
+    }
+  ],
+  "suggestions": [
+    "Say yes to generate image",
+    "Ask to change the image concept"
+  ],
+  "processing_time": 1.02,
+  "usage": {},
+  "stop_reason": "interrupted"
+}
+```
+</ResponseExample>
+</Accordion>
+
+<Accordion title="Resume after confirmation">
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/chatbot/messages' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "message": {
+      "message": "yes",
+      "metadata": { "resume": "yes" }
+    },
+    "thread_id": "thread_abc123",
+    "mode": "prompt2post"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+  "id": "chat_response_902",
+  "thread_id": "thread_abc123",
+  "type": "post_generation",
+  "role": "assistant",
+  "status": "success",
+  "content": [
+    {
+      "type": "post",
+      "post_data": {
+        "platform": "facebook",
+        "content": "🥞 Weekend Brunch Specials...",
+        "hashtags": ["#Brunch", "#WeekendVibes"],
+        "engagement_prediction": 82.1
+      }
+    },
+    {
+      "type": "image",
+      "image_url": "https://cdn.postreach.ai/images/brunch_123.png"
+    }
+  ],
+  "suggestions": [
+    "Generate platform variants",
+    "Schedule this post"
+  ],
+  "processing_time": 6.44,
+  "usage": {},
+  "stop_reason": "end_turn"
+}
+```
+</ResponseExample>
+</Accordion>
+
+<Accordion title="URL to Post Generation">
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/chatbot/messages' \
   -H 'Content-Type: application/json' \
   -H 'X-Session-ID: session_456' \
   -d '{
     "message": {
-      "content": "https://techcrunch.com/2024/01/15/ai-startup-funding-record",
-      "type": "url"
+      "message": "https://techcrunch.com/2024/01/15/ai-startup-funding-record"
     },
     "mode": "url2post",
     "user_background": {
@@ -327,11 +419,6 @@ curl -X POST 'https://api.postreach.ai/chatbot/message' \
       }
     }
   ],
-  "suggestions": [
-    "Generate an infographic to accompany these posts",
-    "Create a follow-up post series about AI investment trends",
-    "Schedule these posts for maximum reach"
-  ],
   "processing_time": 8.76,
   "usage": {
     "input_tokens": 1243,
@@ -342,18 +429,18 @@ curl -X POST 'https://api.postreach.ai/chatbot/message' \
 }
 ```
 </ResponseExample>
+</Accordion>
 
-### Conversation with Context
+<Accordion title="Conversation with Context">
 
 <RequestExample>
 ```bash cURL
-curl -X POST 'https://api.postreach.ai/chatbot/message' \
+curl -X POST 'https://api.postreach.ai/api/v1/chatbot/messages' \
   -H 'Content-Type: application/json' \
   -H 'X-Session-ID: session_789' \
   -d '{
     "message": {
-      "content": "Can you make the LinkedIn post more data-driven and add specific statistics?",
-      "type": "text"
+      "message": "Can you make the LinkedIn post more data-driven and add specific statistics?"
     },
     "mode": "chat",
     "thread_id": "thread_789"
@@ -399,20 +486,23 @@ curl -X POST 'https://api.postreach.ai/chatbot/message' \
 ```
 </ResponseExample>
 
+</Accordion>
+
+</AccordionGroup>
+
 ## Streaming Response
 
 For real-time applications, use the streaming endpoint to receive responses as they're generated.
 
 <RequestExample>
 ```bash cURL Streaming
-curl -X POST 'https://api.postreach.ai/chatbot/message/stream' \
+curl -X POST 'https://api.postreach.ai/api/v1/chatbot/messages/stream' \
   -H 'Content-Type: application/json' \
   -H 'X-Session-ID: session_123' \
   -H 'Accept: text/event-stream' \
   -d '{
     "message": {
-      "content": "Create a Twitter thread about sustainable technology trends",
-      "type": "text"
+      "message": "Create a Twitter thread about sustainable technology trends"
     },
     "mode": "chat2post"
   }'
@@ -432,6 +522,33 @@ data: {"event": "content", "data": {"type": "post", "content": "2/7 🔋 Energy 
 data: {"event": "done", "data": {"usage": {"total_tokens": 456}, "processing_time": 12.3}}
 ```
 </ResponseExample>
+
+## Interrupts and confirmation flow
+
+<Steps>
+<Step title="Agent asks for confirmation">
+When an image generation or editing step requires approval, the response stops with `stop_reason: interrupted` and returns a `tool_use` block named `await_confirmation` with a human-readable question in `input`.
+</Step>
+
+<Step title="Client sends confirmation to resume">
+Send a follow-up request to the same `thread_id` with `message.metadata.resume` set to your confirmation string (e.g., `"yes"`). The agent resumes from the interrupted node and continues the workflow.
+
+```json
+{
+  "message": {
+    "message": "yes",
+    "metadata": { "resume": "yes" }
+  },
+  "thread_id": "<same-thread-id>",
+  "mode": "prompt2post"
+}
+```
+</Step>
+
+<Step title="Quote mode bypasses confirmation">
+For `quote2post`, image generation may proceed without confirmation.
+</Step>
+</Steps>
 
 ## Error Handling
 
@@ -467,7 +584,7 @@ The chatbot can fail due to content policy violations, rate limiting, or process
 ```json
 {
   "status": "failed",
-  "error": "Invalid mode: 'invalid_mode'. Supported modes: prompt2post, image2post, url2post, quote2post, chat2post, chat",
+  "error": "Invalid mode: 'invalid_mode'. Supported modes: prompt2post, image2post, url2post, quote2post",
   "error_code": "INVALID_MODE"
 }
 ```
@@ -497,39 +614,11 @@ The more context you provide about industry, audience, and tone preferences, the
 For better user experience, implement streaming response handling for real-time feedback.
 
 ```javascript
-const eventSource = new EventSource('/chatbot/message/stream');
+const eventSource = new EventSource('/api/v1/chatbot/messages/stream');
 eventSource.onmessage = function(event) {
   const data = JSON.parse(event.data);
   // Handle streaming content
 };
 ```
 </Step>
-
-<Step title="Implement Retry Logic">
-Add exponential backoff for rate-limited requests and temporary failures.
-
-<Note>
-Most temporary failures resolve within 10-30 seconds.
-</Note>
-</Step>
 </Steps>
-
-## Related Endpoints
-
-<CardGroup cols={2}>
-<Card title="Stream Messages" icon="stream" href="/api-reference/chatbot/stream-message">
-  Real-time streaming chat responses
-</Card>
-
-<Card title="Generate Posts" icon="pen-nib" href="/api-reference/pipeline/generate-posts">
-  Alternative pipeline-based post generation
-</Card>
-
-<Card title="Website Analysis" icon="globe" href="/api-reference/website/analyze">
-  Analyze websites for content extraction
-</Card>
-
-<Card title="Post Editing" icon="edit" href="/api-reference/posts/edit">
-  Edit and refine generated content
-</Card>
-</CardGroup> 
