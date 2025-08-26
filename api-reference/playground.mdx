@@ -58,6 +58,11 @@ Modify parameters, test different scenarios, and see live responses. All calls a
   Interactive AI chatbot for content generation
 </Card>
 
+<Card title="Chat Message (Streaming)" icon="waveform" href="#chatbot-message-stream">
+  **POST** `/chatbot/messages/stream`<br/>
+  Real-time SSE streaming for progressive responses
+</Card>
+
 <Card title="Extract Keywords" icon="key" href="#content-keywords">
   **POST** `/content/extract-keywords`<br/>
   Extract keywords from URLs and content
@@ -407,6 +412,63 @@ Test different chatbot modes with realistic scenarios:
 ```
 </Tab>
 </Tabs>
+
+### Streaming Chat {#chatbot-message-stream}
+
+Test real-time SSE streaming from the chatbot:
+
+<Tabs>
+<Tab title="cURL">
+<RequestExample>
+```bash cURL
+curl -N \
+  -X POST 'https://postreachai-ekc4e7fke7bacehe.southeastasia-01.azurewebsites.net/api/v1/chatbot/messages/stream' \
+  -H 'Accept: text/event-stream' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_123' \
+  -d '{
+    "message": { "message": "Write a short LinkedIn post on remote work" },
+    "mode": "prompt2post",
+    "thread_id": "thread_abc123"
+  }'
+```
+</RequestExample>
+</Tab>
+
+<Tab title="JavaScript">
+```javascript Node.js
+import fetch from 'node-fetch';
+
+async function main() {
+  const res = await fetch('https://postreachai-ekc4e7fke7bacehe.southeastasia-01.azurewebsites.net/api/v1/chatbot/messages/stream', {
+    method: 'POST',
+    headers: {
+      'Accept': 'text/event-stream',
+      'Content-Type': 'application/json',
+      'X-Session-ID': 'session_123'
+    },
+    body: JSON.stringify({
+      message: { message: 'Create a concise LinkedIn post on remote work benefits' },
+      mode: 'prompt2post',
+      thread_id: 'thread_abc123'
+    })
+  });
+
+  const decoder = new TextDecoder();
+  for await (const chunk of res.body) {
+    const text = decoder.decode(chunk, { stream: true });
+    console.log(text);
+  }
+}
+
+main();
+```
+</Tab>
+</Tabs>
+
+<Check>
+For full streaming details and event breakdown, see the dedicated page: `/api-reference/chatbot/chat-message-stream`.
+</Check>
 
 ## Response Analysis Tools
 

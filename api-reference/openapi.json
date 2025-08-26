@@ -290,6 +290,61 @@
         }
       }
     },
+    "/chatbot/messages/stream": {
+      "post": {
+        "tags": ["Chatbot Integration"],
+        "summary": "Process Chat Message (Streaming)",
+        "description": "Stream chatbot responses as Server-Sent Events (SSE) following an Anthropic-style event model.",
+        "operationId": "processChatMessageStream",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "example": "text/event-stream" },
+            "description": "Must be set to text/event-stream to enable streaming"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChatbotRequest" },
+              "examples": {
+                "stream_linkedin": {
+                  "summary": "Stream a LinkedIn post generation",
+                  "value": {
+                    "message": { "content": "Create a LinkedIn post about remote work", "type": "text" },
+                    "mode": "prompt2post",
+                    "thread_id": "thread_abc123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SSE stream started. Events will be emitted until completion.",
+            "content": {
+              "text/event-stream": {
+                "schema": { "type": "string", "description": "SSE event stream" },
+                "examples": {
+                  "sse": {
+                    "summary": "SSE Frames",
+                    "value": "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"id\":\"message_response_...\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"model\":null,\"thread_id\":\"thread_abc123\",\"stop_reason\":null,\"stop_sequence\":null}}\n\n"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [ { "bearerAuth": [] } ],
+        "x-mint": {
+          "content": "<Info>Set <code>Accept: text/event-stream</code> to receive real-time events. Use the regular message endpoint for a single JSON response.</Info>"
+        }
+      }
+    },
     "/content/extract-keywords": {
       "post": {
         "tags": ["Content Generation"],
@@ -802,8 +857,8 @@
           },
           "mode": {
             "type": "string",
-            "enum": ["prompt2post", "image2post", "url2post", "quote2post", "chat2post", "chat"],
-            "default": "chat"
+            "enum": ["prompt2post", "image2post", "url2post", "quote2post"],
+            "default": "prompt2post"
           },
           "thread_id": {"type": "string"},
           "user_background": {

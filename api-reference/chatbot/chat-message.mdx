@@ -504,7 +504,7 @@ curl -X POST 'https://api.postreach.ai/api/v1/chatbot/messages/stream' \
     "message": {
       "message": "Create a Twitter thread about sustainable technology trends"
     },
-    "mode": "chat2post"
+    "mode": "prompt2post"
   }'
 ```
 </RequestExample>
@@ -614,11 +614,35 @@ The more context you provide about industry, audience, and tone preferences, the
 For better user experience, implement streaming response handling for real-time feedback.
 
 ```javascript
-const eventSource = new EventSource('/api/v1/chatbot/messages/stream');
-eventSource.onmessage = function(event) {
-  const data = JSON.parse(event.data);
-  // Handle streaming content
-};
+async function streamChat() {
+  const res = await fetch('/api/v1/chatbot/messages/stream', {
+    method: 'POST',
+    headers: {
+      'Accept': 'text/event-stream',
+      'Content-Type': 'application/json',
+      'X-Session-ID': 'session_123'
+    },
+    body: JSON.stringify({
+      message: { message: 'Create a Twitter thread about sustainable tech' },
+      mode: 'prompt2post'
+    })
+  });
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buf.indexOf('\n\n')) !== -1) {
+      const frame = buf.slice(0, idx);
+      buf = buf.slice(idx + 2);
+      console.log(frame); // parse event/data lines
+    }
+  }
+}
 ```
 </Step>
 </Steps>
