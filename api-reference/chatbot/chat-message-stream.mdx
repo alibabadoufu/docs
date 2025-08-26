@@ -1,0 +1,367 @@
+---
+title: "Chatbot Message Streaming (SSE)"
+description: "Stream chatbot responses in real time using Server‑Sent Events following Anthropic-style event schema."
+---
+
+## Overview
+
+Use this endpoint to receive real-time token-by-token updates and tool activity from the chatbot. The stream follows an Anthropic-style event model with well-defined event types for robust clients and UI rendering.
+
+<Info>
+Streaming uses Server‑Sent Events (SSE) over HTTP. Set `Accept: text/event-stream` and keep the connection open while consuming events.
+</Info>
+
+## Endpoint
+
+```http
+POST /api/v1/chatbot/messages/stream
+Accept: text/event-stream
+Content-Type: application/json
+X-Session-ID: <your-session-id>
+```
+
+## Event model
+
+The stream emits these events in order, zero or more times where indicated:
+
+- **message_start**: Start of the assistant message
+- **ping** (0..n): Heartbeat every ~2 seconds if no other data
+- **content_block_start**: Start of a streamable content block
+- **content_block_delta** (0..n): Incremental updates for text/tool/preview/usage/interrupt
+- **content_block_stop**: End of the current content block
+- **message_stop**: End of the assistant message
+- **error**: Error payload if something went wrong
+
+<AccordionGroup>
+<Accordion title="message_start">
+```json
+{
+  "event": "message_start",
+  "data": {
+    "type": "message_start",
+    "message": {
+      "id": "message_response_...",
+      "type": "message",
+      "role": "assistant",
+      "content": [],
+      "model": null,
+      "thread_id": "thread_...",
+      "stop_reason": null,
+      "stop_sequence": null
+    }
+  }
+}
+```
+</Accordion>
+
+<Accordion title="content_block_start">
+```json
+{
+  "event": "content_block_start",
+  "data": {
+    "type": "content_block_start",
+    "content_block": { "id": "content_block_..." }
+  }
+}
+```
+</Accordion>
+
+<Accordion title="content_block_delta: text/tool/preview/usage/interrupt">
+```json
+{
+  "event": "content_block_delta",
+  "data": {
+    "type": "content_block_delta",
+    "delta": { "type": "text_delta", "text": "partial text..." }
+  }
+}
+
+{
+  "event": "content_block_delta",
+  "data": {
+    "type": "content_block_delta",
+    "delta": {
+      "type": "tool_delta",
+      "tool": {
+        "action": "post_content_generation",
+        "platform": "twitter",
+        "text": "partial tool output"
+      }
+    }
+  }
+}
+
+{
+  "event": "content_block_delta",
+  "data": {
+    "type": "content_block_delta",
+    "delta": {
+      "type": "preview_delta",
+      "preview": {
+        "platform": "linkedin",
+        "action": "post_hashtags_generation",
+        "text": "#ai #productivity"
+      }
+    }
+  }
+}
+
+{
+  "event": "content_block_delta",
+  "data": {
+    "type": "content_block_delta",
+    "delta": {
+      "type": "usage_delta",
+      "token_usage": {
+        "name": "agent",
+        "action": "agent",
+        "platform": "",
+        "model": "claude-3-sonnet",
+        "prompt_tokens": 120,
+        "completion_tokens": 45,
+        "total_tokens": 165,
+        "epoch": 1724691200
+      }
+    }
+  }
+}
+
+{
+  "event": "content_block_delta",
+  "data": {
+    "type": "content_block_delta",
+    "delta": {
+      "type": "interrupt_delta",
+      "interrupt": { "message": "I can generate an image. Proceed?" }
+    }
+  }
+}
+```
+</Accordion>
+
+<Accordion title="content_block_stop">
+```json
+{
+  "event": "content_block_stop",
+  "data": {
+    "type": "content_block_stop",
+    "content_block": { "id": "content_block_..." }
+  }
+}
+```
+</Accordion>
+
+<Accordion title="message_stop">
+```json
+{
+  "event": "message_stop",
+  "data": {
+    "type": "message_stop",
+    "message": {
+      "id": "message_response_...",
+      "type": "message",
+      "role": "assistant",
+      "content": [],
+      "model": null,
+      "thread_id": "thread_...",
+      "stop_reason": null,
+      "stop_sequence": null,
+      "processing_time": 4.21
+    }
+  }
+}
+```
+</Accordion>
+
+<Accordion title="error">
+```json
+{
+  "event": "error",
+  "data": {
+    "error": {
+      "type": "error",
+      "message": "Descriptive error message"
+    }
+  }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Request body
+
+<ParamField path="message" type="object" required>
+User message to process. Supports text, URL, image, or quote.
+
+<Expandable title="Message fields">
+  <ParamField path="message.message" type="string" required>
+  The text content to process
+  </ParamField>
+  <ParamField path="message.attachments[]" type="array">
+  Optional list of attachments; items must include `type` and `url`
+  </ParamField>
+  <ParamField path="message.metadata.resume" type="string">
+  Confirmation token to resume an interrupted run
+  </ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField path="mode" type="string" default="prompt2post">
+Processing mode, e.g., `prompt2post`, `image2post`, `url2post`, `quote2post`.
+</ParamField>
+
+<ParamField path="thread_id" type="string">
+Conversation thread identifier for context continuity.
+</ParamField>
+
+<ParamField path="user_background" type="object">
+User preferences and context (industry, tone, audience, platforms).
+</ParamField>
+
+<ParamField path="is_dummy_mode" type="boolean" default>
+Enable dummy responses for testing.
+</ParamField>
+
+## cURL example
+
+<RequestExample>
+```bash cURL
+curl -N \
+  -X POST 'https://postreachai-ekc4e7fke7bacehe.southeastasia-01.azurewebsites.net/api/v1/chatbot/messages/stream' \
+  -H 'Accept: text/event-stream' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_123' \
+  -d '{
+    "message": { "message": "Create a LinkedIn post about remote work" },
+    "mode": "prompt2post",
+    "thread_id": "thread_abc123"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```text Success
+event: message_start
+data: {"type":"message_start","message":{"id":"message_response_...","type":"message","role":"assistant","content":[],"model":null,"thread_id":"thread_abc123","stop_reason":null,"stop_sequence":null}}
+
+event: content_block_start
+data: {"type":"content_block_start","content_block":{"id":"content_block_..."}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"Absolutely! Here's a LinkedIn post..."}}
+
+event: content_block_stop
+data: {"type":"content_block_stop","content_block":{"id":"content_block_..."}}
+
+event: message_stop
+data: {"type":"message_stop","message":{"id":"message_response_...","type":"message","role":"assistant","content":[],"model":null,"thread_id":"thread_abc123","stop_reason":null,"stop_sequence":null,"processing_time":3.42}}
+```
+</ResponseExample>
+
+## JavaScript streaming client
+
+<CodeGroup>
+```javascript Node.js (Fetch streaming)
+import fetch from 'node-fetch';
+
+async function streamChat({ baseUrl, sessionId, body }) {
+  const res = await fetch(`${baseUrl}/chatbot/messages/stream`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'text/event-stream',
+      'Content-Type': 'application/json',
+      'X-Session-ID': sessionId,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+
+  const decoder = new TextDecoder();
+  for await (const chunk of res.body) {
+    const text = decoder.decode(chunk, { stream: true });
+    for (const line of text.split(/\r?\n/)) {
+      if (!line.startsWith('event:') && !line.startsWith('data:')) continue;
+      // Parse SSE frames: pair up event and subsequent data lines as needed
+      console.log(line);
+    }
+  }
+}
+
+await streamChat({
+  baseUrl: 'https://postreachai-ekc4e7fke7bacehe.southeastasia-01.azurewebsites.net/api/v1',
+  sessionId: 'session_123',
+  body: {
+    message: { message: 'Create a concise LinkedIn post on remote work benefits' },
+    mode: 'prompt2post',
+    thread_id: 'thread_abc123'
+  }
+});
+```
+
+```javascript Browser (ReadableStream)
+async function streamChatBrowser() {
+  const res = await fetch('/api/v1/chatbot/messages/stream', {
+    method: 'POST',
+    headers: {
+      'Accept': 'text/event-stream',
+      'Content-Type': 'application/json',
+      'X-Session-ID': window.sessionId,
+    },
+    body: JSON.stringify({
+      message: { message: 'Create a Twitter thread about sustainable tech' },
+      mode: 'prompt2post'
+    }),
+  });
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buf.indexOf('\n\n')) !== -1) {
+      const frame = buf.slice(0, idx);
+      buf = buf.slice(idx + 2);
+      // Frame may include multiple lines like: event: <type>\ndata: <json>
+      console.log(frame);
+    }
+  }
+}
+```
+</CodeGroup>
+
+## Interrupts and resume
+
+If the agent asks for confirmation (e.g., image generation/edit), you will receive an interrupt delta. To continue, call the non-streaming or streaming endpoint with the same `thread_id` and set `message.metadata.resume` to your confirmation string (e.g., "yes").
+
+```json
+{
+  "message": { "message": "yes", "metadata": { "resume": "yes" } },
+  "thread_id": "thread_abc123",
+  "mode": "prompt2post"
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="I only receive pings, no content">
+- Ensure your request body is valid JSON and includes a `message.message` string
+- Verify `Accept: text/event-stream` and `Content-Type: application/json`
+</Accordion>
+
+<Accordion title="Connection closes unexpectedly">
+- Check client/network timeouts. SSE requires a long-lived HTTP connection.
+- Do not buffer the entire response in proxies; disable response buffering.
+</Accordion>
+
+<Accordion title="I need CORS or reverse proxy support">
+- Configure your proxy to allow long-lived responses and disable compression if needed.
+- If using Mintlify playground proxy, see `api.playground.proxy` settings.
+</Accordion>
+</AccordionGroup>
+
+
