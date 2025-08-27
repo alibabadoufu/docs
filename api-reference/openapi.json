@@ -332,7 +332,7 @@
                 "examples": {
                   "sse": {
                     "summary": "SSE Frames",
-                    "value": "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"id\":\"message_response_...\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"model\":null,\"thread_id\":\"thread_abc123\",\"stop_reason\":null,\"stop_sequence\":null}}\n\n"
+                    "value": "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"id\":\"message_response_...\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"model\":null,\"token_usage\":\"[{\"name\":...}]\",\"thread_id\":\"thread_abc123\",\"stop_reason\":null,\"stop_sequence\":null}}\n\n"
                   }
                 }
               }
