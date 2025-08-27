@@ -188,6 +188,107 @@ The stream emits these events in order, zero or more times where indicated:
 </Accordion>
 </AccordionGroup>
 
+## content_block_delta schemas
+
+<Info>
+All deltas are incremental. Treat values as partial updates until you receive `content_block_stop`. Platforms use `twitter` (we normalize any `x` to `twitter`).
+</Info>
+
+### text_delta (For main chat UI)
+
+Represents incremental assistant text tokens.
+
+| Field | Type | Description | Example |
+| --- | --- | --- | --- |
+| `event` | string | Event name | `content_block_delta` |
+| `data.type` | string | Constant | `content_block_delta` |
+| `data.delta.type` | string | Delta discriminator | `text_delta` |
+| `data.delta.text` | string | Next chunk of assistant text | `"Absolutely! Here's a..."` |
+
+### tool_delta
+
+Represents incremental tool activity text for a specific action.
+
+| Field | Type | Description | Example |
+| --- | --- | --- | --- |
+| `event` | string | Event name | `content_block_delta` |
+| `data.type` | string | Constant | `content_block_delta` |
+| `data.delta.type` | string | Delta discriminator | `tool_delta` |
+| `data.delta.tool.action` | string | Tool action (see table below) | `post_content_generation` |
+| `data.delta.tool.platform` | string | Target platform. `""` for non‑platform actions | `twitter` |
+| `data.delta.tool.text` | string | Incremental tool output text | `"Drafting caption..."` |
+
+Supported payload for `tool_delta`:
+
+| Action | Platform | Payload fields | Description |
+| --- | --- | --- | --- |
+| `post_content_generation` | `facebook`/`instagram`/`linkedin`/`twitter` | `text` | Caption/content generation stream |
+| `post_content_editing` | `facebook`/`instagram`/`linkedin`/`twitter` | `text` | Edited caption/content stream |
+| `post_hashtags_generation` | `facebook`/`instagram`/`linkedin`/`twitter` | `text` | Hashtag generation stream |
+| `post_hashtags_editing` | `facebook`/`instagram`/`linkedin`/`twitter` | `text` | Hashtag editing stream |
+| `generate_post_image` | `""` | `text` | Image generation instruction stream |
+| `edit_post_image` | `""` | `text` | Image edit instruction stream |
+| `web_crawler` | `""` | `text` | Crawl instruction/status stream |
+
+### preview_delta
+
+Represents incremental UI preview data produced by tools. Fields vary by action.
+
+Common envelope:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `event` | string | `content_block_delta` |
+| `data.type` | string | `content_block_delta` |
+| `data.delta.type` | string | `preview_delta` |
+| `data.delta.preview.platform` | string | `Target platform` |
+| `data.delta.preview.action` | string | Tool action (see table below) |
+
+Supported payload for `preview_delta`:
+
+| Action | Platform | Fields | Types | Description |
+| --- | --- | --- | --- | --- |
+| `post_content_generation` | `facebook`/`instagram`/`linkedin`/`twitter` | `post_content` | string | Incremental caption/content preview |
+| `post_content_editing` | `facebook`/`instagram`/`linkedin`/`twitter` | `post_content` | string | Incremental edited caption preview |
+| `post_hashtags_generation` | `facebook`/`instagram`/`linkedin`/`twitter` | `post_hashtags` | string | Incremental hashtag preview |
+| `post_hashtags_editing` | `facebook`/`instagram`/`linkedin`/`twitter` | `post_hashtags` | string | Incremental edited hashtag preview |
+| `generate_post_image` | `""` | `post_image_url` | string (URL) | Generated image URL preview |
+| `edit_post_image` | `""` | `post_image_url` | string (URL) | Edited image URL preview |
+
+<Tip>
+Clients should render previews incrementally and treat them as non-final until `content_block_stop`.
+</Tip>
+
+### usage_delta
+
+Represents token usage metrics for either the agent or a specific tool/platform.
+
+| Field | Type | Description | Example |
+| --- | --- | --- | --- |
+| `event` | string | `content_block_delta` |  |
+| `data.type` | string | `content_block_delta` |  |
+| `data.delta.type` | string | `usage_delta` |  |
+| `data.delta.token_usage.name` | string | Logical name of the unit | `agent` |
+| `data.delta.token_usage.action` | string | `agent`, `image_generation`, `image_editing`, or content/hashtag actions | `agent` |
+| `data.delta.token_usage.platform` | string | Platform or empty string | `twitter` |
+| `data.delta.token_usage.model` | string | Model identifier | `claude-3-sonnet` |
+| `data.delta.token_usage.prompt_tokens` | number | Prompt tokens | `120` |
+| `data.delta.token_usage.completion_tokens` | number | Completion tokens | `45` |
+| `data.delta.token_usage.total_tokens` | number | Sum of prompt + completion | `165` |
+| `data.delta.token_usage.epoch` | number | Unix epoch seconds | `1724691200` |
+
+### interrupt_delta
+
+Represents an interruption that requires user confirmation before continuing (e.g., image generation/edit).
+
+| Field | Type | Description | Example |
+| --- | --- | --- | --- |
+| `event` | string | `content_block_delta` |  |
+| `data.type` | string | `content_block_delta` |  |
+| `data.delta.type` | string | `interrupt_delta` |  |
+| `data.delta.interrupt.name` | string | Interrupt identifier | `await_image_confirmation` |
+| `data.delta.interrupt.message` | string | Prompt to display to the user | `"Do you want me to proceed with image generation/editing?"` |
+
 ## Request body
 
 <ParamField path="message" type="object" required>
