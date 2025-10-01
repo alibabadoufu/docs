@@ -314,7 +314,7 @@
                 "stream_linkedin": {
                   "summary": "Stream a LinkedIn post generation",
                   "value": {
-                    "message": { "content": "Create a LinkedIn post about remote work", "type": "text" },
+                    "message": { "message": "Create a LinkedIn post about remote work" },
                     "mode": "prompt2post",
                     "thread_id": "thread_abc123"
                   }
