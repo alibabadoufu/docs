@@ -309,7 +309,7 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ChatbotRequest" },
+              "schema": { "$ref": "#/components/schemas/ChatbotStreamRequest" },
               "examples": {
                 "stream_linkedin": {
                   "summary": "Stream a LinkedIn post generation",
@@ -853,6 +853,55 @@
               "content": {"type": "string"},
               "type": {"type": "string", "enum": ["text", "image", "url", "quote"], "default": "text"},
               "metadata": {"type": "object"}
+            }
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["prompt2post", "image2post", "url2post", "quote2post"],
+            "default": "prompt2post"
+          },
+          "thread_id": {"type": "string"},
+          "user_background": {
+            "type": "object",
+            "properties": {
+              "industry": {"type": "string"},
+              "tone": {"type": "string", "enum": ["professional", "casual", "friendly", "authoritative"]},
+              "target_audience": {"type": "string"},
+              "brand_voice": {"type": "string"},
+              "platforms": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "is_dummy_mode": {"type": "boolean", "default": false}
+        }
+      },
+      "ChatbotStreamRequest": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "object",
+            "required": ["message"],
+            "properties": {
+              "message": {"type": "string"},
+              "attachments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["type", "url"],
+                  "properties": {
+                    "type": {"type": "string"},
+                    "url": {"type": "string"},
+                    "text": {"type": "string"},
+                    "metadata": {"type": "object"}
+                  }
+                }
+              },
+              "metadata": {
+                "type": "object",
+                "properties": {
+                  "resume": {"type": "string"}
+                }
+              }
             }
           },
           "mode": {
