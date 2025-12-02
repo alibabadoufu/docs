@@ -247,6 +247,7 @@ Represents incremental tool activity text for a specific action.
 | `data.delta.tool.platform` | string | Target platform. `""` for non‑platform actions | `twitter` |
 | `data.delta.tool.type` | string | Optional tool status flag. Image tools emit `tool_start` before work begins | `tool_start` |
 | `data.delta.tool.text` | string | Incremental tool output text | `"Drafting caption..."` |
+| `data.delta.tool.platforms` | array | List of platforms for `post_change` action | `["twitter", "linkedin"]` |
 
 Supported payload for `tool_delta`:
 
@@ -259,6 +260,7 @@ Supported payload for `tool_delta`:
 | `generate_post_image` | `""` | `type`, `text` | Image generation instruction stream. `type` emits `tool_start` before generation begins |
 | `edit_post_image` | `""` | `type`, `text` | Image edit instruction stream. `type` emits `tool_start` before editing begins |
 | `web_crawler` | `""` | `text` | Crawl instruction/status stream |
+| `post_change` | `""` | `platforms` | Notification of post changes affecting specific platforms |
 
 Image-related tool deltas always start with a `type: "tool_start"` chunk so clients can display an in-progress state before instructions stream in.
 
@@ -286,6 +288,7 @@ Supported payload for `preview_delta`:
 | `post_hashtags_editing` | `facebook`/`instagram`/`linkedin`/`twitter` | `post_hashtags` | string | Incremental edited hashtag preview |
 | `generate_post_image` | `""` | `post_image_url` | string (URL) | Generated image URL preview |
 | `edit_post_image` | `""` | `post_image_url` | string (URL) | Edited image URL preview |
+| `update_post_image` | `""` | `post_image_url` | string (URL) | Updated image URL preview |
 
 <Tip>
 Clients should render previews incrementally and treat them as non-final until `content_block_stop`.
