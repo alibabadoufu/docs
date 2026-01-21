@@ -81,6 +81,12 @@
             ]
           },
           {
+            "group": "Speech-to-Text",
+            "pages": [
+              "api-reference/speech-to-text/transcribe"
+            ]
+          },
+          {
             "group": "Interactive Testing",
             "pages": [
               "api-reference/playground"
@@ -119,7 +125,11 @@
       "display": "interactive"
     },
     "examples": {
-      "languages": ["curl", "python", "javascript"],
+      "languages": [
+        "curl",
+        "python",
+        "javascript"
+      ],
       "defaults": "all"
     }
   },

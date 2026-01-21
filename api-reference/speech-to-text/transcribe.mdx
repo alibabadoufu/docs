@@ -1,0 +1,206 @@
+---
+title: 'Transcribe Audio'
+description: 'Convert audio files to text using speech-to-text transcription'
+---
+
+## Overview
+
+The Speech-to-Text API enables transcription of audio files from URLs. This is useful for processing voice messages, audio attachments, and other audio content for further AI processing.
+
+<Info>
+The transcription service supports various audio formats and automatically handles format detection when a URL is provided.
+</Info>
+
+## Endpoint
+
+```http
+POST /api/v1/speech-to-text/transcribe
+Content-Type: application/json
+X-Session-ID: <your-session-id>
+```
+
+## Request
+
+<ParamField path="audio_url" type="string" required>
+Publicly accessible URL of the audio file to transcribe
+</ParamField>
+
+<ParamField path="model" type="string" default="gpt-4o-mini-transcribe">
+Model to use for transcription. Default is `gpt-4o-mini-transcribe`
+</ParamField>
+
+<ParamField path="content_type" type="string">
+Optional MIME type of the audio file (e.g., `audio/mp3`, `audio/wav`). Auto-detected if not provided
+</ParamField>
+
+<ParamField path="user_id" type="string">
+Optional user identifier for tracking and analytics
+</ParamField>
+
+## Response
+
+<ResponseField name="text" type="string">
+The transcribed text from the audio file
+</ResponseField>
+
+<ResponseField name="processing_time" type="number">
+Time taken to process the transcription in seconds
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Response status: `success` or `failed`
+</ResponseField>
+
+<ResponseField name="error" type="string">
+Error message if transcription failed
+</ResponseField>
+
+## Examples
+
+<AccordionGroup>
+<Accordion title="Basic Transcription">
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/speech-to-text/transcribe' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_123' \
+  -d '{
+    "audio_url": "https://example.com/audio/voice-message.mp3"
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.postreach.ai/api/v1/speech-to-text/transcribe',
+    headers={
+        'Content-Type': 'application/json',
+        'X-Session-ID': 'session_123'
+    },
+    json={
+        'audio_url': 'https://example.com/audio/voice-message.mp3'
+    }
+)
+
+result = response.json()
+print(result['text'])
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.postreach.ai/api/v1/speech-to-text/transcribe', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Session-ID': 'session_123'
+  },
+  body: JSON.stringify({
+    audio_url: 'https://example.com/audio/voice-message.mp3'
+  })
+});
+
+const result = await response.json();
+console.log(result.text);
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "text": "Hello, I would like to create a social media post about our new product launch next week.",
+  "processing_time": 2.34,
+  "status": "success"
+}
+```
+</ResponseExample>
+</Accordion>
+
+<Accordion title="With Content Type Specified">
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.postreach.ai/api/v1/speech-to-text/transcribe' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Session-ID: session_456' \
+  -d '{
+    "audio_url": "https://storage.example.com/recordings/meeting.wav",
+    "content_type": "audio/wav",
+    "user_id": "user_789"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "text": "Welcome everyone to today's marketing sync. Let's discuss our Q4 social media strategy and the upcoming campaign launches.",
+  "processing_time": 5.67,
+  "status": "success"
+}
+```
+</ResponseExample>
+</Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+<AccordionGroup>
+<Accordion title="Missing Audio URL">
+```json
+{
+  "status": "failed",
+  "error": "Router error: audio_url is required"
+}
+```
+</Accordion>
+
+<Accordion title="Invalid Audio URL">
+```json
+{
+  "status": "failed",
+  "error": "Router error: Failed to download audio from URL"
+}
+```
+</Accordion>
+
+<Accordion title="Unsupported Format">
+```json
+{
+  "status": "failed",
+  "error": "Router error: Unsupported audio format"
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Integration with Chatbot
+
+<Tip>
+The chatbot endpoint automatically handles audio attachments. When you send a message with an audio attachment, it will be transcribed and the text will replace the message content automatically.
+</Tip>
+
+```json
+{
+  "message": {
+    "message": "",
+    "attachments": [
+      {
+        "type": "audio",
+        "url": "https://example.com/voice-note.mp3"
+      }
+    ]
+  },
+  "mode": "prompt2post"
+}
+```
+
+## Supported Audio Formats
+
+| Format | MIME Type | Notes |
+| --- | --- | --- |
+| MP3 | `audio/mpeg` | Most common format |
+| WAV | `audio/wav` | Uncompressed audio |
+| M4A | `audio/m4a` | Apple audio format |
+| WEBM | `audio/webm` | Web audio format |
+| OGG | `audio/ogg` | Open source format |

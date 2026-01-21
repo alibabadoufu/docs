@@ -358,6 +358,32 @@ User preferences and context (industry, tone, audience, platforms).
 Enable dummy responses for testing.
 </ParamField>
 
+<ParamField path="image_config" type="object">
+Configuration for image generation during streaming chatbot interactions
+
+<Expandable title="Image Config Fields">
+<ParamField path="image_config.model" type="string" default="nano-banana">
+Image model to use. Options: `ideogram-v3`, `flux-1-kontext-pro`, `nano-banana`, `nano-banana-pro`
+</ParamField>
+
+<ParamField path="image_config.aspect_ratio" type="string" default="1:1">
+Aspect ratio for images. Options: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`
+</ParamField>
+
+<ParamField path="image_config.prompt_upscale" type="boolean" default="false">
+Automatically optimize the image prompt before generation
+</ParamField>
+
+<ParamField path="image_config.logo_watermark" type="boolean" default="false">
+Add a logo watermark to generated images
+</ParamField>
+
+<ParamField path="image_config.n" type="integer" default="1">
+Number of images to generate
+</ParamField>
+</Expandable>
+</ParamField>
+
 ## cURL example
 
 <RequestExample>

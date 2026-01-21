@@ -128,6 +128,32 @@ Enable dummy mode for testing and development
 Session identifier for request tracking
 </ParamField>
 
+<ParamField path="image_config" type="object">
+Configuration for image generation during chatbot interactions
+
+<Expandable title="Image Config Fields">
+<ParamField path="image_config.model" type="string" default="nano-banana">
+Image model to use for generation. Options: `ideogram-v3`, `flux-1-kontext-pro`, `nano-banana`, `nano-banana-pro`
+</ParamField>
+
+<ParamField path="image_config.aspect_ratio" type="string" default="1:1">
+Aspect ratio for generated images. Options: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`
+</ParamField>
+
+<ParamField path="image_config.prompt_upscale" type="boolean" default="false">
+Whether to automatically optimize/enhance the image prompt before generation
+</ParamField>
+
+<ParamField path="image_config.logo_watermark" type="boolean" default="false">
+Whether to add a logo watermark to the generated image
+</ParamField>
+
+<ParamField path="image_config.n" type="integer" default="1">
+Number of images to generate
+</ParamField>
+</Expandable>
+</ParamField>
+
 ## Response
 
 <ResponseField name="id" type="string">
