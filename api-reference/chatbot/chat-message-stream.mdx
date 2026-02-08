@@ -95,9 +95,11 @@ The stream emits these events in order, zero or more times where indicated:
     "delta": {
       "type": "tool_delta",
       "tool": {
-        "action": "post_content_generation",
-        "platform": "twitter",
-        "text": "partial tool output"
+        "name": "post_content_generation",
+        "payload": {
+          "platform": "twitter",
+          "text": "partial tool output"
+        }
       }
     }
   }
@@ -110,10 +112,12 @@ The stream emits these events in order, zero or more times where indicated:
     "delta": {
       "type": "tool_delta",
       "tool": {
-        "action": "generate_post_image",
-        "platform": "",
-        "type": "tool_start",
-        "text": "Getting ready to generate your image..."
+        "name": "generate_post_image",
+        "payload": {
+          "platform": "",
+          "type": "tool_start",
+          "text": "Getting ready to generate your image..."
+        }
       }
     }
   }
@@ -236,31 +240,30 @@ Represents incremental assistant text tokens.
 
 ### tool_delta
 
-Represents incremental tool activity text for a specific action.
+Represents incremental tool activity updates. `tool.name` is stable per tool, while `tool.payload` shape varies by tool name.
 
 | Field | Type | Description | Example |
 | --- | --- | --- | --- |
 | `event` | string | Event name | `content_block_delta` |
 | `data.type` | string | Constant | `content_block_delta` |
 | `data.delta.type` | string | Delta discriminator | `tool_delta` |
-| `data.delta.tool.action` | string | Tool action (see table below) | `post_content_generation` |
-| `data.delta.tool.platform` | string | Target platform. `""` for non‑platform actions | `twitter` |
-| `data.delta.tool.type` | string | Optional tool status flag. Image tools emit `tool_start` before work begins | `tool_start` |
-| `data.delta.tool.text` | string | Incremental tool output text | `"Drafting caption..."` |
-| `data.delta.tool.platforms` | array | List of platforms for `post_change` action | `["twitter", "linkedin"]` |
+| `data.delta.tool.name` | string | Tool name (see table below) | `post_content_generation` |
+| `data.delta.tool.payload` | object | Tool-specific payload object | `{ "platform": "twitter", "text": "Drafting caption..." }` |
 
 Supported payload for `tool_delta`:
 
-| Action | Platform | Payload fields | Description |
+| Tool name | Payload fields | Description |
 | --- | --- | --- | --- |
-| `post_content_generation` | `facebook`/`instagram`/`linkedin`/`twitter` | `text` | Caption/content generation stream |
-| `post_content_editing` | `facebook`/`instagram`/`linkedin`/`twitter` | `text` | Edited caption/content stream |
-| `post_hashtags_generation` | `facebook`/`instagram`/`linkedin`/`twitter` | `text` | Hashtag generation stream |
-| `post_hashtags_editing` | `facebook`/`instagram`/`linkedin`/`twitter` | `text` | Hashtag editing stream |
-| `generate_post_image` | `""` | `type`, `text` | Image generation instruction stream. `type` emits `tool_start` before generation begins |
-| `edit_post_image` | `""` | `type`, `text` | Image edit instruction stream. `type` emits `tool_start` before editing begins |
-| `web_crawler` | `""` | `text` | Crawl instruction/status stream |
-| `post_change` | `""` | `platforms` | Notification of post changes affecting specific platforms |
+| `post_content_generation` | `platform`, `text` | Caption/content generation stream (`platform` is one of `facebook`/`instagram`/`linkedin`/`twitter`) |
+| `post_content_editing` | `platform`, `text` | Edited caption/content stream (`platform` is one of `facebook`/`instagram`/`linkedin`/`twitter`) |
+| `post_hashtags_generation` | `platform`, `text` | Hashtag generation stream (`platform` is one of `facebook`/`instagram`/`linkedin`/`twitter`) |
+| `post_hashtags_editing` | `platform`, `text` | Hashtag editing stream (`platform` is one of `facebook`/`instagram`/`linkedin`/`twitter`) |
+| `generate_post_image` | `platform`, `type`, `text` | Image generation instruction stream. `platform` is `""`; `type` may emit `tool_start` before generation begins |
+| `edit_post_image` | `platform`, `type`, `text` | Image edit instruction stream. `platform` is `""`; `type` may emit `tool_start` before editing begins |
+| `web_crawler` | `type`, `text` | Crawl instruction/status stream |
+| `image_prompt_generation` | `type`, `text` | Image prompt construction stream |
+| `post_change` | `platforms` | Notification of post changes affecting specific platforms |
+| `web_search` | dynamic object | Search payload from the tool (schema may vary by backend implementation) |
 
 Image-related tool deltas always start with a `type: "tool_start"` chunk so clients can display an in-progress state before instructions stream in.
 
@@ -525,4 +528,3 @@ If the agent asks for confirmation (e.g., image generation/edit), you will recei
 - If using Mintlify playground proxy, see `api.playground.proxy` settings.
 </Accordion>
 </AccordionGroup>
-
